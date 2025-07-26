@@ -1,0 +1,3432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slasher Movie Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0505 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: #ff4444;
+            text-shadow: 0 0 20px #ff4444;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #ccc;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .header .tagline {
+            color: #ff6666;
+            font-style: italic;
+        }
+
+        .section {
+            background: rgba(30, 30, 30, 0.9);
+            border: 2px solid #ff4444;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .section h2 {
+            color: #ff4444;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #ff4444;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+        }
+
+        .cast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .character-card {
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .character-card.returning {
+            border: 2px solid #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .character-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .character-avatar {
+            width: 60px;
+            height: 60px;
+            background: #555;
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .character-info h3 {
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .character-info .archetype {
+            color: #ff4444;
+            font-style: italic;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat {
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #ccc;
+            margin-bottom: 3px;
+        }
+
+        .stat-bar {
+            height: 8px;
+            background: #444;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ff8888);
+            transition: width 0.3s ease;
+        }
+
+        .survival-chance {
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(255, 68, 68, 0.1);
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff4444, #cc3333);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #ff6666, #ff4444);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 68, 68, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #666, #444);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #777, #555);
+        }
+
+        .movie-log {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .event {
+            background: rgba(255, 68, 68, 0.1);
+            border-left: 4px solid #ff4444;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .event.title {
+            border-left-color: #ff4444;
+            background: rgba(255, 68, 68, 0.2);
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .event.narrative {
+            border-left-color: #888;
+            background: rgba(136, 136, 136, 0.1);
+            font-style: italic;
+        }
+
+        .event.killer-thought {
+            border-left-color: #8e24aa;
+            background: rgba(142, 36, 170, 0.1);
+            font-style: italic;
+            color: #e1bee7;
+        }
+
+        .event.death {
+            border-left-color: #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+        }
+
+        .event.attack {
+            border-left-color: #ff8800;
+            background: rgba(255, 136, 0, 0.1);
+        }
+
+        .event.reveal, .event.event {
+            border-left-color: #8800ff;
+            background: rgba(136, 0, 255, 0.1);
+        }
+
+        .event.dialogue {
+            font-style: italic;
+            color: #aaa;
+            border-left-color: #666;
+            background: rgba(102, 102, 102, 0.1);
+        }
+
+        .event.red-herring {
+            background: rgba(255, 255, 0, 0.1);
+            border-left-color: #ffff00;
+        }
+
+        .final-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .final-table th {
+            background: #ff4444;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .final-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #444;
+        }
+
+        .final-table tr:hover {
+            background: rgba(255, 68, 68, 0.1);
+        }
+
+        .status-alive { background: #4CAF50; color: white; padding: 4px 8px; border-radius: 3px; }
+        .status-dead { background: #f44336; color: white; padding: 4px 8px; border-radius: 3px; }
+        .status-attacked { background: #ff9800; color: white; padding: 4px 8px; border-radius: 3px; }
+        .status-killed { background: #d32f2f; color: white; padding: 4px 8px; border-radius: 3px; }
+        .status-killer { background: #9c27b0; color: white; padding: 4px 8px; border-radius: 3px; }
+        .status-n\/a { background: #666; color: #ccc; padding: 4px 8px; border-radius: 3px; }
+
+        .edgic-table {
+            margin-top: 30px;
+        }
+
+        .franchise-history {
+            margin-top: 40px;
+        }
+
+        .franchise-history h3 {
+            color: #ff4444;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .edgic-cell {
+            text-align: center;
+            font-weight: bold;
+            padding: 8px 4px;
+            border-radius: 3px;
+        }
+
+        /* UTR ratings - lightest tones */
+        .edgic-utr { background: #F4A460; color: white; } /* Sandy brown - neutral UTR */
+        .edgic-utrp { background: #DDA0DD; color: white; } /* Plum - positive UTR */
+        .edgic-utrn { background: #CD853F; color: white; } /* Peru - negative UTR */
+        .edgic-utrm { background: #D2691E; color: white; } /* Chocolate - mixed UTR */
+
+        /* MOR ratings - medium tones */
+        .edgic-mor { background: #FFD700; color: black; } /* Gold - neutral MOR */
+        .edgic-morp { background: #DA70D6; color: white; } /* Orchid - positive MOR */
+        .edgic-morn { background: #9370DB; color: white; } /* Medium slate blue - negative MOR */
+        .edgic-morm { background: #8FBC8F; color: white; } /* Dark sea green - mixed MOR */
+
+        /* CP ratings - strongest tones */
+        .edgic-cp { background: #20B2AA; color: white; } /* Light sea green - neutral CP */
+        .edgic-cpp { background: #4169E1; color: white; } /* Royal blue - positive CP */
+        .edgic-cpn { background: #8A2BE2; color: white; } /* Blue violet - negative CP */
+        .edgic-cpm { background: #008B8B; color: white; } /* Dark cyan - mixed CP */
+
+        /* OTT ratings - most dramatic */
+        .edgic-ott { background: #32CD32; color: white; } /* Lime green - neutral OTT */
+        .edgic-ottp { background: #00FF7F; color: white; } /* Spring green - positive OTT */
+        .edgic-ottn { background: #FF0000; color: white; } /* Red - negative OTT */
+        .edgic-ottm { background: #228B22; color: white; } /* Forest green - mixed OTT */
+
+        /* Special cases */
+        .edgic-inv { background: #333; color: #666; } /* Invisible */
+        .edgic-dead { background: #666; color: #ccc; } /* Dead */
+        .edgic-na { background: #444; color: #888; } /* Not available */
+
+        .killer-reveal {
+            background: linear-gradient(135deg, #8e24aa, #5e35b1);
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .killer-reveal h3 {
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .motive-text {
+            color: #e1bee7;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ff8888);
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .cast-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💀 SLASHER MOVIE SIMULATOR 💀</h1>
+            <div class="subtitle">Inspired by the Scream franchise</div>
+            <div class="tagline">The killer is among us...</div>
+        </div>
+
+        <div id="setup-screen">
+            <div class="section">
+                <h2>Movie Setup</h2>
+                <div class="form-group">
+                    <label for="movie-title">Movie Title</label>
+                    <input type="text" id="movie-title" placeholder="Enter your horror movie title...">
+                </div>
+                <div class="form-group">
+                    <label for="movie-year">Release Year</label>
+                    <input type="number" id="movie-year" min="1970" max="2030" value="2025" placeholder="2025">
+                </div>
+                <div class="form-group">
+                    <label for="game-mode">Game Mode</label>
+                    <select id="game-mode">
+                        <option value="spectator">Spectator (Killer hidden)</option>
+                        <option value="killer">Play as Killer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cast-size">Cast Size</label>
+                    <select id="cast-size">
+                        <option value="6">6 characters</option>
+                        <option value="8" selected>8 characters</option>
+                        <option value="10">10 characters</option>
+                        <option value="12">12 characters</option>
+                        <option value="15">15 characters</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="killer-count">Number of Killers</label>
+                    <select id="killer-count">
+                        <option value="random">Random (1-3)</option>
+                        <option value="1">1 Killer</option>
+                        <option value="2">2 Killers</option>
+                        <option value="3">3 Killers</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="setupCast()" id="create-cast-btn">Create Cast</button>
+                <button class="btn btn-secondary" onclick="alert('Test button works!')" style="margin-left: 10px;">Test Button</button>
+            </div>
+
+            <div id="cast-customization" class="section hidden">
+                <h2>Cast Customization</h2>
+                <div id="cast-container" class="cast-grid"></div>
+                <button class="btn" onclick="startMovie()">Start Horror Movie</button>
+                <button class="btn btn-secondary" onclick="randomizeCast()">Randomize All</button>
+            </div>
+        </div>
+
+        <div id="movie-screen" class="hidden">
+            <div class="section">
+                <h2 id="current-movie-title"></h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="movie-progress"></div>
+                </div>
+                <div id="current-act-display"></div>
+            </div>
+
+            <div class="section">
+                <div id="movie-log" class="movie-log"></div>
+                <div style="text-align: center; margin: 20px 0;">
+                    <button class="btn" id="continue-btn" onclick="continueStory()" style="display: none;">Continue Story</button>
+                    <button class="btn" id="autoplay-btn" onclick="toggleAutoplay()">Enable Autoplay</button>
+                    <button class="btn btn-secondary" id="skip-btn" onclick="skipToEnd()" style="display: none;">Skip to End</button>
+                    <button class="btn" id="view-results-btn" onclick="viewResults()" style="display: none;">View Final Results</button>
+                </div>
+                <div id="story-status" style="text-align: center; color: #ccc; margin: 10px 0;"></div>
+            </div>
+
+            <div id="killer-controls" class="section hidden">
+                <h2>Killer Actions</h2>
+                <div id="killer-targets"></div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button class="btn" id="force-killer-action" onclick="forceKillerAction()" style="display: none; background: #8B0000; font-size: 18px; padding: 20px 30px;">
+                        🔪 TAKE KILLER ACTION NOW 🔪
+                    </button>
+                    <p id="killer-help-text" style="color: #ff6666; margin-top: 10px; display: none;">
+                        Click "Continue Story" to get killer opportunities, or use the button above to force an action anytime!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div id="results-screen" class="hidden">
+            <div class="section">
+                <h2 id="final-title"></h2>
+                
+                <div id="killer-reveal-section"></div>
+
+                <div class="final-table-container">
+                    <h3>Final Body Count</h3>
+                    <table class="final-table" id="final-body-count">
+                        <thead>
+                            <tr>
+                                <th>Character</th>
+                                <th>Archetype</th>
+                                <th>Act 1</th>
+                                <th>Act 2</th>
+                                <th>Act 3</th>
+                                <th>Final Status</th>
+                                <th>Killed By</th>
+                            </tr>
+                        </thead>
+                        <tbody id="final-body-tbody"></tbody>
+                    </table>
+                </div>
+
+                <div class="edgic-table">
+                    <h3>Horror Movie Edgic Analysis</h3>
+                    <table class="final-table" id="edgic-analysis">
+                        <thead>
+                            <tr>
+                                <th>Character</th>
+                                <th>Archetype</th>
+                                <th>Act 1</th>
+                                <th>Act 2</th>
+                                <th>Act 3</th>
+                            </tr>
+                        </thead>
+                        <tbody id="edgic-tbody"></tbody>
+                    </table>
+                </div>
+
+                <button class="btn" onclick="createSequel()">Create Sequel</button>
+                <button class="btn btn-secondary" onclick="resetSimulator()">Create New Horror</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Character archetypes and names
+        const archetypes = [
+            { name: 'The Final Girl', description: 'Pure-hearted and resourceful, destined to survive', stats: { survival: 9, intelligence: 8, social: 6, athletics: 7, stealth: 6, luck: 8 } },
+            { name: 'The Flirt', description: 'Seductive but often meets a grisly end', stats: { survival: 3, intelligence: 5, social: 9, athletics: 6, stealth: 4, luck: 4 } },
+            { name: 'The Jock', description: 'Strong and athletic but often overconfident', stats: { survival: 5, intelligence: 4, social: 7, athletics: 9, stealth: 3, luck: 5 } },
+            { name: 'The Nerd', description: 'Smart and analytical, often discovers clues', stats: { survival: 6, intelligence: 9, social: 3, athletics: 2, stealth: 7, luck: 6 } },
+            { name: 'The Stoner', description: 'Laid-back and oblivious to danger', stats: { survival: 2, intelligence: 3, social: 6, athletics: 4, stealth: 5, luck: 3 } },
+            { name: 'The Rich Girl', description: 'Entitled and pampered, easy target', stats: { survival: 2, intelligence: 5, social: 8, athletics: 3, stealth: 2, luck: 7 } },
+            { name: 'The Bad Boy', description: 'Rebellious with a dark past', stats: { survival: 6, intelligence: 6, social: 7, athletics: 8, stealth: 8, luck: 4 } },
+            { name: 'The Innocent', description: 'Pure and naive, tugs at heartstrings', stats: { survival: 4, intelligence: 6, social: 8, athletics: 4, stealth: 6, luck: 7 } },
+            { name: 'The Outcast', description: 'Mysterious loner with secrets', stats: { survival: 7, intelligence: 8, social: 2, athletics: 5, stealth: 9, luck: 5 } },
+            { name: 'The Party Girl', description: 'Lives for fun and excitement', stats: { survival: 3, intelligence: 4, social: 9, athletics: 6, stealth: 3, luck: 5 } },
+            { name: 'The Skeptic', description: 'Doesn\'t believe in the supernatural', stats: { survival: 5, intelligence: 8, social: 5, athletics: 6, stealth: 6, luck: 4 } },
+            { name: 'The Hero', description: 'Brave protector of others', stats: { survival: 7, intelligence: 7, social: 8, athletics: 8, stealth: 5, luck: 6 } },
+            { name: 'The Coward', description: 'First to run, sometimes survives', stats: { survival: 6, intelligence: 6, social: 4, athletics: 7, stealth: 8, luck: 8 } },
+            { name: 'The Tomboy', description: 'Tough and independent', stats: { survival: 7, intelligence: 7, social: 5, athletics: 8, stealth: 7, luck: 6 } },
+            { name: 'The Drama Queen', description: 'Attention-seeking and dramatic', stats: { survival: 3, intelligence: 5, social: 8, athletics: 4, stealth: 2, luck: 4 } },
+            { name: 'The Boyfriend', description: 'Devoted partner, often protective', stats: { survival: 5, intelligence: 6, social: 7, athletics: 7, stealth: 5, luck: 5 } },
+            { name: 'The Best Friend', description: 'Loyal companion to the protagonist', stats: { survival: 6, intelligence: 7, social: 9, athletics: 5, stealth: 6, luck: 6 } },
+            { name: 'The Reporter', description: 'Investigative journalist seeking the truth', stats: { survival: 6, intelligence: 8, social: 8, athletics: 5, stealth: 6, luck: 5 } },
+            { name: 'The Horror Fanatic', description: 'Knows all the rules but may be overconfident', stats: { survival: 7, intelligence: 7, social: 6, athletics: 5, stealth: 6, luck: 4 } }
+        ];
+
+        const names = [
+            'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Ethan', 'Sophia', 'Mason', 'Isabella', 'William',
+            'Mia', 'James', 'Charlotte', 'Benjamin', 'Amelia', 'Lucas', 'Harper', 'Henry', 'Evelyn', 'Alexander',
+            'Abigail', 'Michael', 'Emily', 'Elijah', 'Elizabeth', 'Daniel', 'Mila', 'Matthew', 'Ella', 'Jackson',
+            'Madison', 'David', 'Scarlett', 'Sebastian', 'Victoria', 'Joseph', 'Aria', 'Samuel', 'Grace', 'John',
+            'Chloe', 'Owen', 'Camila', 'Wyatt', 'Penelope', 'Jack', 'Riley', 'Luke', 'Layla', 'Jayden',
+            'Zoey', 'Dylan', 'Nora', 'Grayson', 'Lily', 'Levi', 'Eleanor', 'Isaac', 'Hannah', 'Gabriel'
+        ];
+
+        // Game state
+        let gameState = {
+            characters: [],
+            killers: [],
+            gameMode: 'spectator',
+            currentAct: 1,
+            movieTitle: '',
+            movieYear: new Date().getFullYear(),
+            events: [],
+            isKillerMode: false,
+            killerPlayer: null,
+            autoPlay: false,
+            movieComplete: false,
+            storyQueue: [],
+            currentStoryIndex: 0
+        };
+
+        // Franchise history tracking
+        let franchiseHistory = {
+            movies: [],
+            allCharacters: new Map() // Map character names to their info across movies
+        };
+
+        // Setup functions
+        function setupCast() {
+            try {
+                console.log('setupCast function called');
+                
+                const castSize = parseInt(document.getElementById('cast-size').value);
+                const gameMode = document.getElementById('game-mode').value;
+                const movieTitle = document.getElementById('movie-title').value || 'Untitled Horror';
+                const movieYear = parseInt(document.getElementById('movie-year').value) || new Date().getFullYear();
+                
+                console.log('Values:', { castSize, gameMode, movieTitle, movieYear });
+                
+                gameState.gameMode = gameMode;
+                gameState.movieTitle = movieTitle;
+                gameState.movieYear = movieYear;
+                gameState.isKillerMode = gameMode === 'killer';
+                
+                // Generate characters
+                gameState.characters = [];
+                const usedNames = new Set();
+                const usedArchetypes = new Set();
+                
+                for (let i = 0; i < castSize; i++) {
+                    let name, archetype;
+                    
+                    // Get unique name
+                    do {
+                        name = names[Math.floor(Math.random() * names.length)];
+                    } while (usedNames.has(name));
+                    usedNames.add(name);
+                    
+                    // Get unique archetype (allow duplicates if needed)
+                    if (archetypes.length >= castSize) {
+                        do {
+                            archetype = archetypes[Math.floor(Math.random() * archetypes.length)];
+                        } while (usedArchetypes.has(archetype.name));
+                        usedArchetypes.add(archetype.name);
+                    } else {
+                        archetype = archetypes[Math.floor(Math.random() * archetypes.length)];
+                    }
+                    
+                    const character = {
+                        id: i,
+                        name: name,
+                        archetype: archetype,
+                        stats: { ...archetype.stats },
+                        status: 'Alive',
+                        actStatuses: { 1: 'Alive', 2: 'Alive', 3: 'Alive' },
+                        killedBy: null,
+                        deathAct: null,
+                        survivalChance: calculateSurvivalChance(archetype.stats),
+                        edgic: { 1: 'UTR1', 2: 'UTR1', 3: 'UTR1' },
+                        isReturning: false
+                    };
+                    
+                    gameState.characters.push(character);
+                }
+                
+                console.log('Generated characters:', gameState.characters.length);
+                
+                // Determine killers
+                let killerCount = document.getElementById('killer-count').value;
+                if (killerCount === 'random') {
+                    const rand = Math.random();
+                    killerCount = rand < 0.6 ? 1 : rand < 0.9 ? 2 : 3;
+                } else {
+                    killerCount = parseInt(killerCount);
+                }
+                
+                gameState.killers = [];
+                const killerIndices = [];
+                while (killerIndices.length < killerCount) {
+                    const index = Math.floor(Math.random() * gameState.characters.length);
+                    if (!killerIndices.includes(index)) {
+                        killerIndices.push(index);
+                        gameState.killers.push(gameState.characters[index]);
+                    }
+                }
+                
+                console.log('Selected killers:', gameState.killers.length);
+                
+                displayCastCustomization();
+                console.log('setupCast completed successfully');
+                
+            } catch (error) {
+                console.error('Error in setupCast:', error);
+                alert('Error creating cast: ' + error.message);
+            }
+        }
+
+        function calculateSurvivalChance(stats) {
+            const total = stats.survival * 2 + stats.intelligence + stats.athletics + stats.stealth + stats.luck;
+            return Math.min(90, Math.max(5, total * 1.2));
+        }
+
+        function displayCastCustomization() {
+            const container = document.getElementById('cast-container');
+            container.innerHTML = '';
+            
+            gameState.characters.forEach((character, index) => {
+                const card = document.createElement('div');
+                card.className = character.isReturning ? 'character-card returning' : 'character-card';
+                card.innerHTML = `
+                    <div class="character-header">
+                        <div class="character-avatar">${character.isReturning ? '🔁' : '👤'}</div>
+                        <div class="character-info">
+                            <h3>
+                                <input type="text" value="${character.name}" onchange="updateCharacterName(${index}, this.value)" style="background: transparent; border: none; color: white; font-size: inherit; width: 100%;">
+                                ${character.isReturning ? '<span style="color: #4CAF50; font-size: 0.8rem;"> (RETURNING)</span>' : ''}
+                            </h3>
+                            <select class="archetype" onchange="updateCharacterArchetype(${index}, this.value)">
+                                ${archetypes.map(arch => `<option value="${arch.name}" ${arch.name === character.archetype.name ? 'selected' : ''}>${arch.name}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        ${Object.entries(character.stats).map(([stat, value]) => `
+                            <div class="stat">
+                                <div class="stat-label">${stat.charAt(0).toUpperCase() + stat.slice(1)}</div>
+                                <div class="stat-bar">
+                                    <div class="stat-fill" style="width: ${value * 10}%"></div>
+                                </div>
+                                <input type="range" min="1" max="10" value="${value}" onchange="updateCharacterStat(${index}, '${stat}', this.value)" style="width: 100%; margin-top: 5px;">
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="survival-chance">
+                        Survival Chance: ${character.survivalChance.toFixed(1)}%
+                        ${character.isReturning ? '<br><span style="color: #4CAF50; font-size: 0.9rem;">📈 Veteran Survivor Bonuses Applied!</span>' : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            document.getElementById('cast-customization').classList.remove('hidden');
+        }
+
+        function updateCharacterName(index, name) {
+            gameState.characters[index].name = name;
+        }
+
+        function updateCharacterArchetype(index, archetypeName) {
+            const archetype = archetypes.find(a => a.name === archetypeName);
+            gameState.characters[index].archetype = archetype;
+            gameState.characters[index].stats = { ...archetype.stats };
+            gameState.characters[index].survivalChance = calculateSurvivalChance(archetype.stats);
+            displayCastCustomization();
+        }
+
+        function updateCharacterStat(index, stat, value) {
+            gameState.characters[index].stats[stat] = parseInt(value);
+            gameState.characters[index].survivalChance = calculateSurvivalChance(gameState.characters[index].stats);
+            displayCastCustomization();
+        }
+
+        function randomizeCast() {
+            gameState.characters.forEach(character => {
+                Object.keys(character.stats).forEach(stat => {
+                    character.stats[stat] = Math.floor(Math.random() * 10) + 1;
+                });
+                character.survivalChance = calculateSurvivalChance(character.stats);
+            });
+            displayCastCustomization();
+        }
+
+        function startMovie() {
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('movie-screen').classList.remove('hidden');
+            document.getElementById('current-movie-title').textContent = gameState.movieTitle;
+            
+            if (gameState.isKillerMode) {
+                document.getElementById('killer-controls').classList.remove('hidden');
+                displayKillerSelection();
+            }
+            
+            gameState.currentAct = 1;
+            gameState.events = [];
+            gameState.autoPlay = false;
+            gameState.movieComplete = false;
+            updateProgress();
+            updateMovieControls();
+            startAct1();
+        }
+
+        function displayKillerSelection() {
+            const container = document.getElementById('killer-targets');
+            container.innerHTML = '<h3>Choose your killer character from the entire cast:</h3><p style="color: #ff6666; margin-bottom: 15px;">Any character can be the killer - choose wisely!</p>';
+            
+            // Allow selection from ALL characters, not just pre-selected killers
+            gameState.characters.forEach(character => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.style.margin = '5px';
+                btn.style.display = 'block';
+                btn.style.width = '100%';
+                btn.innerHTML = `
+                    <strong>${character.name}</strong> - ${character.archetype.name}
+                    <br><small style="opacity: 0.8;">Stealth: ${character.stats.stealth}/10, Intelligence: ${character.stats.intelligence}/10</small>
+                `;
+                btn.onclick = () => selectKillerPlayer(character);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectKillerPlayer(killer) {
+            gameState.killerPlayer = killer;
+            
+            // Remove them from the original killers list and add them as the player killer
+            gameState.killers = gameState.killers.filter(k => k.id !== killer.id);
+            if (!gameState.killers.includes(killer)) {
+                gameState.killers.push(killer);
+            }
+            
+            // Show who the other killers are (if any)
+            const otherKillers = gameState.killers.filter(k => k.id !== killer.id);
+            let killerInfo = `
+                <h3>Playing as: ${killer.name} (${killer.archetype.name})</h3>
+                <p style="color: #ff4444; margin-bottom: 15px;">You are the killer! You'll get action choices throughout the movie...</p>
+            `;
+            
+            if (otherKillers.length > 0) {
+                killerInfo += `
+                    <div style="background: rgba(142, 36, 170, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #8e24aa;">
+                        <h4 style="color: #e1bee7; margin-bottom: 10px;">🤝 YOUR ACCOMPLICE${otherKillers.length > 1 ? 'S' : ''}:</h4>
+                        ${otherKillers.map(accomplice => `
+                            <div style="color: #e1bee7; margin-bottom: 8px;">
+                                <strong>${accomplice.name}</strong> (${accomplice.archetype.name}) - Stealth: ${accomplice.stats.stealth}/10, Intelligence: ${accomplice.stats.intelligence}/10
+                            </div>
+                        `).join('')}
+                        <p style="color: #ddd; font-size: 0.9rem; margin-top: 10px; font-style: italic;">
+                            You're working together! They'll also be killing victims throughout the movie. Coordinate your terror campaign!
+                        </p>
+                    </div>
+                `;
+            } else {
+                killerInfo += `
+                    <div style="background: rgba(142, 36, 170, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #8e24aa;">
+                        <p style="color: #e1bee7; font-style: italic;">
+                            🔪 You're flying solo - it's all up to you to terrorize the victims!
+                        </p>
+                    </div>
+                `;
+            }
+            
+            killerInfo += `
+                <div style="background: rgba(255, 68, 68, 0.1); padding: 15px; border-radius: 8px;">
+                    <p style="color: #ccc; margin: 0;">The movie will start soon. Watch for killer action prompts during the story!</p>
+                </div>
+                <div id="killer-action-area"></div>
+            `;
+            
+            document.getElementById('killer-targets').innerHTML = killerInfo;
+        }
+
+        function showKillerActions() {
+            if (!gameState.isKillerMode || !gameState.killerPlayer) return;
+            
+            const aliveVictims = gameState.characters.filter(c => 
+                c.status === 'Alive' && c.id !== gameState.killerPlayer.id && !gameState.killers.includes(c)
+            );
+            
+            if (aliveVictims.length === 0) {
+                document.getElementById('killer-action-area').innerHTML = '<p style="color: #666;">No targets remaining...</p>';
+                return;
+            }
+            
+            const otherKillers = gameState.killers.filter(k => k.id !== gameState.killerPlayer.id && k.status === 'Alive');
+            let accompliceInfo = '';
+            if (otherKillers.length > 0) {
+                accompliceInfo = `
+                    <div style="background: rgba(142, 36, 170, 0.15); padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                        <small style="color: #e1bee7;">🤝 Working with: ${otherKillers.map(k => k.name).join(', ')}</small>
+                    </div>
+                `;
+            }
+            
+            const actionArea = document.getElementById('killer-action-area');
+            actionArea.innerHTML = `
+                ${accompliceInfo}
+                <div style="background: rgba(255, 68, 68, 0.1); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 2px solid #ff4444;">
+                    <h4 style="color: #ff4444; margin-bottom: 15px;">🔪 KILLER ACTIONS AVAILABLE</h4>
+                    <p style="color: #ccc; margin-bottom: 15px;">Choose your next move carefully. Each action has consequences...</p>
+                    
+                    <div style="display: grid; gap: 15px;">
+                        <button class="btn" onclick="showKillTargets()" style="background: #8B0000;">
+                            💀 Kill a Victim
+                        </button>
+                        <button class="btn btn-secondary" onclick="performPsychOut()">
+                            👻 Psychological Torment
+                        </button>
+                        <button class="btn btn-secondary" onclick="plantEvidence()">
+                            🔍 Plant Evidence/Red Herring
+                        </button>
+                        <button class="btn btn-secondary" onclick="hideAndWait()">
+                            ⏰ Hide and Wait for Better Opportunity
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="killer-target-selection" style="display: none;">
+                    <h4 style="color: #ff4444; margin-bottom: 15px;">Select Your Target:</h4>
+                    <div style="display: grid; gap: 10px;">
+                        ${aliveVictims.map(victim => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #333; border-radius: 5px;">
+                                <div>
+                                    <strong>${victim.name}</strong> - ${victim.archetype.name}
+                                    <br><small style="color: #ccc;">Survival: ${victim.stats.survival}/10, Stealth: ${victim.stats.stealth}/10, Athletics: ${victim.stats.athletics}/10</small>
+                                </div>
+                                <button class="btn" onclick="attemptKill(${victim.id})" style="background: #8B0000; padding: 8px 15px;">
+                                    Kill
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-secondary" onclick="cancelKillAction()" style="margin-top: 15px;">Cancel</button>
+                </div>
+            `;
+        }
+
+        function attemptKill(victimId) {
+            const victim = gameState.characters.find(c => c.id === victimId);
+            if (!victim || victim.status !== 'Alive') return;
+            
+            // Calculate success chance based on victim's stats
+            const victimDefense = victim.stats.survival + victim.stats.stealth + victim.stats.athletics;
+            const baseSuccessChance = 70; // Base 70% chance
+            const statModifier = (30 - victimDefense) * 2; // High stat victims are harder to kill
+            const finalChance = Math.max(30, Math.min(95, baseSuccessChance + statModifier));
+            
+            const success = Math.random() * 100 < finalChance;
+            
+            if (success) {
+                // Successful kill
+                const killMethods = [
+                    'You catch them alone in the kitchen and strike with a knife.',
+                    'You corner them in the basement - nowhere to run.',
+                    'A perfect ambush from the shadows.',
+                    'You lure them outside and finish them quickly.',
+                    'They never saw it coming in the dark hallway.',
+                    'A classic horror movie kill in the bathroom.',
+                    'You catch them trying to escape through a window.',
+                    'You strike while they\'re distracted on their phone.',
+                    'The perfect moment presents itself and you seize it.',
+                    'You use their own trust against them.'
+                ];
+                
+                const method = killMethods[Math.floor(Math.random() * killMethods.length)];
+                addEvent('death', `💀 KILLER STRIKE: ${method}`);
+                
+                const victimLastWords = [
+                    `"Wait... ${gameState.killerPlayer.name}?!" - ${victim.name}, shocked`,
+                    `"I should have trusted my instincts about you!" - ${victim.name}`,
+                    `"This is for what exactly?!" - ${victim.name}, confused`,
+                    `"I can't believe it was you all along!" - ${victim.name}`,
+                    `"But I thought we were friends!" - ${victim.name}, betrayed`,
+                    `"You're insane!" - ${victim.name}, terrified`
+                ];
+                
+                addEvent('dialogue', victimLastWords[Math.floor(Math.random() * victimLastWords.length)]);
+                killCharacter(victim, gameState.killerPlayer, gameState.currentAct);
+                
+                addEvent('killer-thought', `You feel a rush of adrenaline. The kill was clean and efficient.`);
+                
+            } else {
+                // Failed attempt - victim escapes
+                const escapeScenarios = [
+                    `You attack ${victim.name} but they fight back and escape!`,
+                    `${victim.name} spots you coming and runs screaming!`,
+                    `Your strike misses and ${victim.name} kicks you, then flees!`,
+                    `${victim.name} throws something at you and bolts through a window!`,
+                    `${victim.name} dodges your attack and alerts the others!`
+                ];
+                
+                const scenario = escapeScenarios[Math.floor(Math.random() * escapeScenarios.length)];
+                addEvent('attack', `⚠️ FAILED KILL ATTEMPT: ${scenario}`);
+                
+                const escapeLines = [
+                    `"${gameState.killerPlayer.name} IS THE KILLER! RUN!" - ${victim.name}`,
+                    `"I KNEW IT! ${gameState.killerPlayer.name} JUST TRIED TO KILL ME!" - ${victim.name}`,
+                    `"HELP! ${gameState.killerPlayer.name} HAS LOST IT!" - ${victim.name}`
+                ];
+                
+                addEvent('dialogue', escapeLines[Math.floor(Math.random() * escapeLines.length)]);
+                attackCharacter(victim, gameState.currentAct);
+                
+                // Reveal killer to everyone if attack fails
+                addEvent('reveal', `🎭 Your identity as the killer has been exposed! The survivors know it's you!`);
+                addEvent('killer-thought', `Your cover is blown. The hunt is now on for YOU.`);
+            }
+            
+            // Hide action menu and advance story
+            document.getElementById('killer-action-area').innerHTML = '<p style="color: #666;">Action completed. Continuing story...</p>';
+            
+            // Resume automatic story progression and show force button again
+            setTimeout(() => {
+                const forceKillerBtn = document.getElementById('force-killer-action');
+                if (forceKillerBtn && gameState.isKillerMode && gameState.killerPlayer) {
+                    const aliveVictims = gameState.characters.filter(c => 
+                        c.status === 'Alive' && c.id !== gameState.killerPlayer.id
+                    );
+                    if (aliveVictims.length > 0) {
+                        forceKillerBtn.style.display = 'inline-block';
+                        document.getElementById('killer-help-text').style.display = 'block';
+                    }
+                }
+                
+                // Clear the "action completed" message
+                document.getElementById('killer-action-area').innerHTML = '';
+                
+                // Continue story automatically after killer action
+                if (!gameState.autoPlay) {
+                    setTimeout(() => continueStory(), 1000);
+                }
+            }, 3000);
+            
+            // Resume automatic story progression
+            setTimeout(() => {
+                continueStory();
+            }, 2000);
+        }
+
+        function showKillTargets() {
+            document.getElementById('killer-target-selection').style.display = 'block';
+        }
+
+        function cancelKillAction() {
+            document.getElementById('killer-target-selection').style.display = 'none';
+        }
+
+        function performPsychOut() {
+            const aliveVictims = gameState.characters.filter(c => 
+                c.status === 'Alive' && c.id !== gameState.killerPlayer.id && !gameState.killers.includes(c)
+            );
+            
+            if (aliveVictims.length === 0) return;
+            
+            const victim = aliveVictims[Math.floor(Math.random() * aliveVictims.length)];
+            
+            const psychOuts = [
+                `You leave a threatening note for ${victim.name} to find.`,
+                `You move ${victim.name}'s belongings around to mess with their head.`,
+                `You make creepy phone calls to ${victim.name}.`,
+                `You leave bloody handprints near ${victim.name}'s room.`,
+                `You cut the power when ${victim.name} is alone.`,
+                `You play mind games by appearing briefly in ${victim.name}'s peripheral vision.`,
+                `You whisper ${victim.name}'s name from the shadows.`,
+                `You leave a photo of ${victim.name} with their face scratched out.`
+            ];
+            
+            const psychOut = psychOuts[Math.floor(Math.random() * psychOuts.length)];
+            addEvent('event', `👻 PSYCHOLOGICAL WARFARE: ${psychOut}`);
+            
+            const victimReactions = [
+                `"I'm losing my mind... or someone's messing with me." - ${victim.name}`,
+                `"This isn't funny anymore. Someone's trying to scare me." - ${victim.name}`,
+                `"I feel like I'm being watched constantly." - ${victim.name}`,
+                `"Someone is definitely trying to get inside my head." - ${victim.name}`,
+                `"I'm not imagining this. Someone wants me scared." - ${victim.name}`
+            ];
+            
+            addEvent('dialogue', victimReactions[Math.floor(Math.random() * victimReactions.length)]);
+            addEvent('killer-thought', `You smile behind your mask. Fear is almost as satisfying as the kill itself.`);
+            
+            document.getElementById('killer-action-area').innerHTML = '<p style="color: #666;">Psychological torment complete. Continuing story...</p>';
+            
+            // Show the force killer action button again after completing an action
+            setTimeout(() => {
+                const forceKillerBtn = document.getElementById('force-killer-action');
+                if (forceKillerBtn && gameState.isKillerMode && gameState.killerPlayer) {
+                    const aliveVictims = gameState.characters.filter(c => 
+                        c.status === 'Alive' && c.id !== gameState.killerPlayer.id && !gameState.killers.includes(c)
+                    );
+                    if (aliveVictims.length > 0) {
+                        forceKillerBtn.style.display = 'inline-block';
+                        document.getElementById('killer-help-text').style.display = 'block';
+                    }
+                }
+                document.getElementById('killer-action-area').innerHTML = '';
+                
+                // Continue story automatically after killer action
+                if (!gameState.autoPlay) {
+                    setTimeout(() => continueStory(), 1000);
+                }
+            }, 3000);
+            
+            setTimeout(() => {
+                continueStory();
+            }, 1500);
+        }
+
+        function plantEvidence() {
+            const aliveInnocents = gameState.characters.filter(c => 
+                c.status === 'Alive' && c.id !== gameState.killerPlayer.id
+            );
+            
+            if (aliveInnocents.length < 2) {
+                addEvent('event', `🔍 You try to plant evidence but there aren't enough targets remaining.`);
+                document.getElementById('killer-action-area').innerHTML = '<p style="color: #666;">Not enough targets. Continuing story...</p>';
+                setTimeout(() => continueStory(), 1000);
+                return;
+            }
+            
+            const target = aliveInnocents[Math.floor(Math.random() * aliveInnocents.length)];
+            
+            const evidencePlants = [
+                `You plant bloody clothing in ${target.name}'s room.`,
+                `You hide a murder weapon in ${target.name}'s backpack.`,
+                `You forge incriminating text messages on ${target.name}'s phone.`,
+                `You leave ${target.name}'s fingerprints on a suspicious item.`,
+                `You spread rumors about ${target.name}'s suspicious behavior.`,
+                `You plant photos that make ${target.name} look guilty.`,
+                `You stage evidence to make ${target.name} look unhinged.`,
+                `You manipulate the crime scene to point to ${target.name}.`
+            ];
+            
+            const plant = evidencePlants[Math.floor(Math.random() * evidencePlants.length)];
+            addEvent('red-herring', `🔍 EVIDENCE PLANTED: ${plant}`);
+            
+            addEvent('killer-thought', `Perfect. Let them turn on each other while you watch from the shadows.`);
+            
+            document.getElementById('killer-action-area').innerHTML = '<p style="color: #666;">Evidence planted successfully. Continuing story...</p>';
+            
+            // Show the force killer action button again after completing an action
+            setTimeout(() => {
+                const forceKillerBtn = document.getElementById('force-killer-action');
+                if (forceKillerBtn && gameState.isKillerMode && gameState.killerPlayer) {
+                    const aliveVictims = gameState.characters.filter(c => 
+                        c.status === 'Alive' && c.id !== gameState.killerPlayer.id
+                    );
+                    if (aliveVictims.length > 0) {
+                        forceKillerBtn.style.display = 'inline-block';
+                    }
+                }
+                document.getElementById('killer-action-area').innerHTML = '';
+            }, 3000);
+            
+            setTimeout(() => {
+                continueStory();
+            }, 1500);
+        }
+
+        function hideAndWait() {
+            addEvent('killer-thought', `You retreat to the shadows, biding your time for the perfect moment to strike...`);
+            addEvent('event', `The killer seems to have vanished. An eerie calm settles over the house.`);
+            
+            const waitingDialogue = [
+                `"Where did they go? This silence is worse than the attacks." - Random survivor`,
+                `"They're still here. I can feel them watching us." - Random survivor`,
+                `"This is psychological torture. They want us scared." - Random survivor`,
+                `"The quiet is making me more nervous than the attacks." - Random survivor`
+            ];
+            
+            addEvent('dialogue', waitingDialogue[Math.floor(Math.random() * waitingDialogue.length)]);
+            addEvent('killer-thought', `Patience is a killer's greatest weapon. Your time will come.`);
+            
+            document.getElementById('killer-action-area').innerHTML = '<p style="color: #666;">Hiding in the shadows. Continuing story...</p>';
+            
+            // Show the force killer action button again after completing an action
+            setTimeout(() => {
+                const forceKillerBtn = document.getElementById('force-killer-action');
+                if (forceKillerBtn && gameState.isKillerMode && gameState.killerPlayer) {
+                    const aliveVictims = gameState.characters.filter(c => 
+                        c.status === 'Alive' && c.id !== gameState.killerPlayer.id
+                    );
+                    if (aliveVictims.length > 0) {
+                        forceKillerBtn.style.display = 'inline-block';
+                    }
+                }
+                document.getElementById('killer-action-area').innerHTML = '';
+            }, 3000);
+            
+            setTimeout(() => {
+                continueStory();
+            }, 1500);
+        }
+
+        function updateProgress() {
+            const progress = ((gameState.currentAct - 1) / 3) * 100;
+            document.getElementById('movie-progress').style.width = progress + '%';
+            document.getElementById('current-act-display').textContent = `Act ${gameState.currentAct}`;
+        }
+
+        function startAct1() {
+            gameState.storyQueue = [];
+            gameState.currentStoryIndex = 0;
+            
+            // Queue up Act 1 events
+            gameState.storyQueue.push({
+                type: 'title',
+                text: `🎬 ${gameState.movieTitle.toUpperCase()} - ACT 1 🎬`,
+                delay: 1000
+            });
+            
+            // Add sequel opening if there are returning characters
+            const returningCharacters = gameState.characters.filter(c => c.isReturning);
+            if (returningCharacters.length > 0) {
+                gameState.storyQueue.push({
+                    type: 'narrative',
+                    text: `The survivors thought they were safe... they were wrong. ${returningCharacters.length > 1 ? 'Our returning survivors' : 'Our returning survivor'} ${returningCharacters.map(c => c.name).join(' and ')} hoped to move on with ${returningCharacters.length > 1 ? 'their' : 'their'} life, but the nightmare has found ${returningCharacters.length > 1 ? 'them' : 'them'} again...`,
+                    delay: 2000
+                });
+                
+                gameState.storyQueue.push({
+                    type: 'function',
+                    func: () => addSequelReferences(),
+                    delay: 2000
+                });
+            } else {
+                gameState.storyQueue.push({
+                    type: 'narrative',
+                    text: 'The night is young, and our unsuspecting victims gather...',
+                    delay: 2000
+                });
+            }
+            
+            // Opening kill
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => performOpeningKill(),
+                delay: 1000
+            });
+            
+            // Act 1 events - simplified to ensure killer actions work
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addGroupEvent(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addCharacterMoment(),
+                delay: 2000
+            });
+            
+            // Add sequel reference if applicable
+            if (gameState.characters.some(c => c.isReturning)) {
+                gameState.storyQueue.push({
+                    type: 'function',
+                    func: () => {
+                        if (Math.random() < 0.5) addSequelReferences();
+                        else addQuietMoment();
+                    },
+                    delay: 1500
+                });
+            } else {
+                gameState.storyQueue.push({
+                    type: 'function',
+                    func: () => addQuietMoment(),
+                    delay: 1500
+                });
+            }
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => performRandomKill(),
+                delay: 3000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addTensionMoment(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addCharacterInteraction(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addJumpScare(),
+                delay: 1500
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addRelationshipDrama(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addRedHerring(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addCharacterMoment(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => performRandomKill(),
+                delay: 3000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addTensionMoment(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addDiscoveryEvent(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addCharacterMoment(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => performRandomAttack(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => endAct1(),
+                delay: 1000
+            });
+            
+            updateMovieControls();
+            
+            if (gameState.autoPlay) {
+                playNextStoryEvent();
+            } else {
+                updateStoryStatus();
+            }
+        }
+
+        function performOpeningKill() {
+            const aliveCharacters = gameState.characters.filter(c => c.status === 'Alive' && !gameState.killers.includes(c));
+            if (aliveCharacters.length === 0) return;
+            
+            const victim = aliveCharacters[Math.floor(Math.random() * aliveCharacters.length)];
+            const killer = gameState.killers[Math.floor(Math.random() * gameState.killers.length)];
+            
+            const openingKills = [
+                `${victim.name} answers the phone at exactly 11:47 PM. "Hello?" Click. They hang up and walk to the kitchen for a late-night snack when WHAM! A meat cleaver splits their skull like a watermelon.`,
+                `${victim.name} is taking a steamy shower when the lights flicker. "Hello? Is someone there?" The shower curtain gets yanked back and a masked figure plunges a kitchen knife into their chest seven times.`,
+                `${victim.name} hears scratching at the window. "Probably just a tree branch," they mutter, opening the blinds. CRASH! The killer bursts through the glass, tackling them to the ground and strangling them with piano wire.`,
+                `${victim.name} is alone in the garage working on their car when the garage door suddenly slams shut. The killer emerges from behind a tool cabinet and impales them on a garden rake.`,
+                `${victim.name} is studying late at night when they hear the doorbell ring. "Pizza's here!" they call out, opening the door without checking. Instead of pizza, they get a chainsaw to the face.`,
+                `${victim.name} is doing laundry in the basement when the washing machine starts making weird noises. They lean in to check and the killer grabs them from behind, shoving their head into the spin cycle.`,
+                `${victim.name} decides to take out the trash during a thunderstorm. Lightning flashes as they reach the dumpster, revealing the killer standing behind it. A machete swing later, and ${victim.name} becomes part of the garbage.`,
+                `${victim.name} is home alone watching TV when the power goes out. They grab a flashlight and head to the breaker box, only to find the killer waiting with a pair of bolt cutters. SNAP! goes more than just the power.`,
+                `${victim.name} is making a midnight snack when they hear their dog barking outside. "What's wrong, boy?" They open the back door to find their dog... and the killer holding a bloody shovel.`,
+                `${victim.name} is video chatting with friends when the wifi cuts out. "Ugh, typical!" They head upstairs to reset the router and walk straight into a tripwire that sends them tumbling down the stairs... into a pit of kitchen knives.`
+            ];
+            
+            const kill = openingKills[Math.floor(Math.random() * openingKills.length)];
+            addEvent('death', `💀 OPENING KILL: ${kill}`);
+            
+            const lastWords = [
+                `"Wait... ${killer.name}? But why would you—" *THUD*`,
+                `"I knew I should have stayed home and binge-watched The Office!" *gurgling sounds*`,
+                `"This is just like that movie we watched last week!" *screaming*`,
+                `"Mom always said don't trust anyone... guess she was right." *choking*`,
+                `"But we're supposed to be friends! We had study group together!" *gasping*`,
+                `"I always thought I'd die from something cooler, like skydiving!" *whimpering*`,
+                `"Please, I'll do anything! I'll even delete my TikTok!" *sobbing*`,
+                `"You're making a huge mistake! I have terrible Yelp reviews to write!" *coughing up blood*`,
+                `"I should have listened to my gut feeling... and my horoscope..." *dying breath*`,
+                `"This is so not going in my Instagram story!" *final gasp*`,
+                `"Wait, can I at least post one last selfie?" *choking*`,
+                `"I haven't even finished watching Stranger Things yet!" *gasping*`,
+                `"My mom is going to be SO mad about this!" *wheezing*`,
+                `"I was supposed to return my library books tomorrow!" *struggling*`,
+                `"Tell my followers I died doing what I loved... being dramatic!" *theatrical death*`
+            ];
+            
+            addEvent('dialogue', lastWords[Math.floor(Math.random() * lastWords.length)]);
+            
+            killCharacter(victim, killer, 1);
+        }
+
+        function addEvent(type, text) {
+            gameState.events.push({ type, text, act: gameState.currentAct });
+            updateMovieLog();
+        }
+
+        function updateMovieLog() {
+            const log = document.getElementById('movie-log');
+            const latestEvent = gameState.events[gameState.events.length - 1];
+            
+            const eventDiv = document.createElement('div');
+            eventDiv.className = `event ${latestEvent.type}`;
+            eventDiv.textContent = latestEvent.text;
+            
+            log.appendChild(eventDiv);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function killCharacter(victim, killer, act) {
+            victim.status = 'Dead';
+            victim.actStatuses[act] = 'Killed';
+            victim.killedBy = killer.name;
+            victim.deathAct = act;
+            
+            // Update edgic for dramatic death
+            victim.edgic[act] = 'CP5';
+        }
+
+        function attackCharacter(victim, act) {
+            if (victim.status === 'Alive') {
+                victim.actStatuses[act] = 'Attacked';
+                victim.edgic[act] = 'CP4';
+            }
+        }
+
+        function performRandomKill() {
+            const aliveCharacters = gameState.characters.filter(c => c.status === 'Alive' && !gameState.killers.includes(c));
+            if (aliveCharacters.length === 0) return;
+            
+            const victim = aliveCharacters[Math.floor(Math.random() * aliveCharacters.length)];
+            const killer = gameState.killers[Math.floor(Math.random() * gameState.killers.length)];
+            
+            const killScenarios = [
+                `${victim.name} goes to the basement to check the breaker box when the lights go out. "Great, just great," they mutter, fumbling with their phone flashlight. The killer appears behind them with a nail gun - THUNK THUNK THUNK!`,
+                `${victim.name} is making popcorn in the kitchen when they hear the microwave beeping weirdly. They open it to find a bloody note that says "YOU'RE NEXT." Suddenly, the killer grabs them from behind and shoves their head into the garbage disposal.`,
+                `${victim.name} decides to "split up to cover more ground" (classic mistake). They're searching the attic when a floorboard creaks. "Hello?" The killer drops down from the rafters and strangles them with Christmas lights.`,
+                `${victim.name} is in the bathroom applying lipgloss when they notice in the mirror that the shower curtain is moving. "Very funny, guys!" The killer bursts out and drowns them in the toilet.`,
+                `${victim.name} goes outside to get something from their car. The killer pops out of the backseat like a jack-in-the-box and beheads them with a machete. Their head rolls under the car and their body slumps against the horn - HOOOOONK!`,
+                `${victim.name} is in bed scrolling TikTok when they hear footsteps upstairs. "Must be the cat," they say, even though they don't have a cat. The killer crashes through the ceiling and impales them with a flagpole.`,
+                `${victim.name} is doing dishes when they notice all the knives are missing from the knife block. "That's weird..." they say, turning around to find the killer juggling them. The juggling act ends with all the knives in ${victim.name}.`,
+                `${victim.name} decides to hide in a closet after hearing strange noises. "This is just like hide and seek," they whisper. The killer finds them and turns it into "hide and SHRIEK" with a power drill.`,
+                `${victim.name} is taking selfies in the bathroom when they notice someone in the background of their photos. They turn around and the killer photobombs their life... permanently, with a sledgehammer.`,
+                `${victim.name} goes to the kitchen for a midnight snack and finds a trail of rose petals. "Aww, how romantic!" they follow the trail... straight into a bear trap. The killer emerges clapping slowly.`,
+                `${victim.name} is playing video games with headphones on, completely oblivious. They're so focused on their game that they don't notice the killer standing behind them until it's GAME OVER - literally.`,
+                `${victim.name} decides to take a relaxing bath. They light candles, pour bubbles, and settle in. The killer drops a plugged-in toaster into the water. Bath time becomes shock therapy.`,
+                `${victim.name} is reorganizing the tool shed when they hear the door slam shut behind them. "Hello? This isn't funny!" The killer has turned the shed into a house of horrors with every tool as a weapon.`,
+                `${victim.name} is doing yoga in the living room when they get stuck in a difficult pose. The killer seizes the opportunity and turns downward dog into permanent sleep with a yoga block to the skull.`,
+                `${victim.name} is making a sandwich when they realize the mayo looks weird. They taste it. "This isn't mayo..." It's poison. The killer watches from the doorway as ${victim.name} foams at the mouth.`,
+                `${victim.name} is watching a horror movie alone and keeps shouting "Don't go in there!" at the screen. Ironically, they get up to investigate a noise in the basement. The killer appreciates the irony.`
+            ];
+            
+            const scenario = killScenarios[Math.floor(Math.random() * killScenarios.length)];
+            addEvent('death', `💀 ${scenario}`);
+            
+            const finalWords = [
+                `"Wait, I think I left my car unlocked—" *SLICE*`,
+                `"This is exactly how Jennifer died in that movie!" *THUNK*`,
+                `"I should have listened to my therapist about trusting people!" *gurgling*`,
+                `"Why is it always the pretty ones who die first?" *CRASH*`,
+                `"I definitely should have gone to college instead!" *SPLAT*`,
+                `"My mom is going to kill me for missing curfew... oh wait." *choking sounds*`,
+                `"I knew I should have swiped left on this whole situation!" *gasping*`,
+                `"This is why I have trust issues and daddy problems!" *wheezing*`,
+                `"Note to self: never volunteer to check weird noises." *final breath*`,
+                `"I always wondered how I'd die... not like this though!" *screaming*`,
+                `"Can we talk about this like civilized people?!" *pleading*`,
+                `"Plot twist: I was adopted! Maybe that matters?" *desperate*`,
+                `"I haven't even posted my last Instagram story yet!" *sobbing*`,
+                `"This is definitely going in my one-star Yelp review!" *coughing*`,
+                `"I should have stayed in tonight and ordered DoorDash!" *regretful*`,
+                `"But I'm lactose intolerant! Doesn't that count for something?!" *confused*`,
+                `"I never got to meet Ryan Reynolds!" *dramatic*`,
+                `"My WiFi password dies with me! Good luck, roommates!" *spiteful*`,
+                `"This is way worse than my student loan debt!" *defeated*`,
+                `"At least I won't have to pretend to like pineapple on pizza anymore!" *relieved*`
+            ];
+            
+            addEvent('dialogue', finalWords[Math.floor(Math.random() * finalWords.length)]);
+            
+            killCharacter(victim, killer, gameState.currentAct);
+        }
+
+        function addGroupEvent() {
+            const aliveChars = gameState.characters.filter(c => c.status === 'Alive');
+            if (aliveChars.length < 2) return;
+            
+            const char1 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            const char2 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            const char3 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            
+            const events = [
+                `The group huddles in the living room. ${char1.name} suggests, "We should stick together!" ${char2.name} rolls their eyes. "Yeah, because that worked so well in every horror movie ever."`,
+                `Everyone searches the house for clues. ${char1.name} finds a bloody hammer under the couch. "Uh, guys? This definitely wasn't here during our last Airbnb review."`,
+                `${char1.name} starts nailing boards over the windows. "There!" they say proudly. ${char2.name} points out, "Congratulations, you just trapped us inside with the killer, genius."`,
+                `A heated argument breaks out. ${char1.name} shouts, "One of us is the killer!" ${char2.name} snaps back, "Yeah, probably you for bringing it up!" ${char3.name} just wants to order pizza.`,
+                `${char1.name} holds up their dead phone. "No bars. Classic." ${char2.name} tries the landline. "Cut. Also classic." ${char3.name} suggests, "Maybe we should have stayed home and stress-eaten ice cream instead."`,
+                `The group finds a hidden camera in the bathroom. ${char1.name} waves at it sarcastically. "Hi Mom! If you're watching this, please send help and maybe some snacks!"`,
+                `${char1.name} discovers all the car keys are missing. "Someone doesn't want us to leave." ${char2.name} tries to hotwire a car. "I learned this from Grand Theft Auto!" It doesn't work. "Apparently video games lied to me."`,
+                `The group finds a creepy diary hidden in the attic. ${char1.name} reads aloud: "Day 47: They still don't suspect me." Everyone looks around suspiciously. "Well, that's not ominous at all," mutters ${char2.name}.`,
+                `${char1.name} suggests they arm themselves with kitchen knives. ${char2.name} picks up a butter knife. "This should do it," they say sarcastically. ${char3.name} grabs a rolling pin. "I'm going full Great British Bake-Off on this killer."`,
+                `Everyone decides to search different rooms. ${char1.name} points out, "Isn't splitting up how everyone dies in horror movies?" ${char2.name} shrugs, "We'll be fine. What could go wrong?" Famous last words.`,
+                `${char1.name} finds a basement door that's been boarded up. "Should we check what's down there?" ${char2.name} responds, "Absolutely not! That's Horror 101: Never go in the basement! Have you learned nothing from Scream?"`,
+                `The group discovers strange symbols carved into the walls. ${char1.name} tries to take a photo but their camera won't work. "Great, even my phone knows this is cursed," they mutter.`,
+                `${char1.name} notices all the mirrors in the house are covered. "That's not ominous at all," says ${char2.name}. ${char3.name} uncovers one and immediately screams at their own reflection. "False alarm! Just my terrible hair!"`,
+                `Everyone realizes they can't remember how they got to this place. ${char1.name} says, "Last thing I remember was getting in the car..." ${char2.name} adds, "This feels like a really bad movie plot. Like, really bad."`,
+                // Serious moments mixed in
+                `The group sits in stunned silence, processing what they've witnessed. ${char1.name} finally speaks: "We're really going to die here, aren't we?" The weight of reality settles over them like a heavy blanket.`,
+                `${char1.name} breaks down crying. "I just want to go home. I want to see my family again." ${char2.name} puts an arm around them. "We will. We have to believe that."`,
+                // Special events for new archetypes
+                ...(gameState.characters.some(c => c.archetype.name === 'The Reporter' && c.status === 'Alive') ? [
+                    `${gameState.characters.find(c => c.archetype.name === 'The Reporter')?.name} starts taking notes. "This is going to make one hell of a story... if I survive to write it. 'Local Students Discover Murder is Bad for Health.'"`,
+                    `${gameState.characters.find(c => c.archetype.name === 'The Reporter')?.name} tries to interview everyone. "Can you describe your feelings about possibly dying tonight? On a scale of one to ten, how would you rate this horror experience?"`,
+                ] : []),
+                ...(gameState.characters.some(c => c.archetype.name === 'The Horror Fanatic' && c.status === 'Alive') ? [
+                    `${gameState.characters.find(c => c.archetype.name === 'The Horror Fanatic')?.name} excitedly explains, "This is exactly like Friday the 13th Part VII! We need to follow the survival rules! Step one: don't be stupid!"`,
+                    `${gameState.characters.find(c => c.archetype.name === 'The Horror Fanatic')?.name} starts listing horror movie tropes. "Don't say 'I'll be right back,' don't investigate strange noises, and never, EVER split up! Also, avoid having sex because that's basically a death sentence!"`,
+                ] : [])
+            ];
+            
+            addEvent('event', events[Math.floor(Math.random() * events.length)]);
+        }
+
+        function addRedHerring() {
+            const aliveChars = gameState.characters.filter(c => c.status === 'Alive');
+            if (aliveChars.length === 0) return;
+            
+            const character = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            
+            const herrings = [
+                `${character.name} is found with a bloody knife - but claims it's not what it looks like.`,
+                `A witness claims they saw ${character.name} at the crime scene.`,
+                `${character.name}'s alibi doesn't check out for the time of the murder.`,
+                `${character.name} has a dark secret from their past that could be a motive.`,
+                `${character.name} was acting strangely before the first murder occurred.`,
+                `${character.name} is discovered burning bloody clothes in the backyard.`,
+                `Someone finds ${character.name}'s fingerprints on the murder weapon.`,
+                `${character.name} was overheard making threats against the victim last week.`,
+                `A bloody handprint matching ${character.name}'s size is found at the scene.`,
+                `${character.name} lied about where they were during the time of death.`,
+                `${character.name} is caught sneaking around the house at night.`,
+                `A love letter from ${character.name} is found in the victim's room... covered in blood.`,
+                `${character.name} knows suspiciously detailed information about how the victim died.`,
+                `Security footage shows ${character.name} near the victim's location before the murder.`,
+                `${character.name} has the same type of weapon that killed the victim hidden in their bag.`
+            ];
+            
+            addEvent('red-herring', herrings[Math.floor(Math.random() * herrings.length)]);
+        }
+
+        function addCharacterMoment() {
+            const aliveChars = gameState.characters.filter(c => c.status === 'Alive');
+            if (aliveChars.length < 2) return;
+            
+            const char1 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            let char2 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            while (char2 === char1 && aliveChars.length > 1) {
+                char2 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            }
+            
+            const moments = [
+                // Romantic moments
+                {
+                    event: `${char1.name} and ${char2.name} find a quiet moment alone together.`,
+                    dialogue: [
+                        `"I'm scared, ${char2.name}. What if we don't make it out of here?" - ${char1.name}, voice trembling.`,
+                        `"Hey, look at me. We're going to be okay. I promise." - ${char2.name}, taking their hand.`,
+                        `"I should have told you this before, but... I love you." - ${char1.name}`,
+                        `"I love you too. And that's exactly why we're both going to survive this nightmare and get matching tattoos." - ${char2.name}`
+                    ]
+                },
+                // Horror comedy moments
+                {
+                    event: `${char1.name} and ${char2.name} try to process the situation with dark humor.`,
+                    dialogue: [
+                        `"So on a scale of Friday the 13th to Saw, how screwed are we?" - ${char1.name}`,
+                        `"I'd say we're hovering around a solid Scream 3. Bad, but not unwatchable." - ${char2.name}`,
+                        `"Great. I always wanted to be in a horror movie. Just not as a victim." - ${char1.name}`,
+                        `"Look on the bright side - if we survive, we'll have the best college essay topic ever." - ${char2.name}`
+                    ]
+                },
+                // Campy friendship bonding
+                {
+                    event: `${char1.name} opens up to ${char2.name} about their fears.`,
+                    dialogue: [
+                        `"I keep thinking about ${gameState.characters.find(c => c.status === 'Dead')?.name || 'everyone we\'ve lost'}." - ${char1.name}`,
+                        `"I know. It's like we're trapped in the world's worst reality show." - ${char2.name}`,
+                        `"Remember when our biggest problem was choosing between Netflix or Hulu?" - ${char1.name}`,
+                        `"Simpler times. Now I'd kill for a boring math test." - ${char2.name}, then pausing, "Poor choice of words."`
+                    ]
+                },
+                // Self-aware horror moment
+                {
+                    event: `${char1.name} and ${char2.name} discuss their survival chances.`,
+                    dialogue: [
+                        `"Okay, real talk. In horror movies, who usually survives?" - ${char1.name}`,
+                        `"The virgin, the final girl, and sometimes the comic relief if they're lucky." - ${char2.name}`,
+                        `"Well, I'm definitely not the virgin..." - ${char1.name}`,
+                        `"And I'm way too sarcastic to be the final girl. We're doomed." - ${char2.name}`
+                    ]
+                },
+                // Serious dramatic moment
+                {
+                    event: `${char1.name} breaks down emotionally with ${char2.name}.`,
+                    dialogue: [
+                        `"I can't do this anymore, ${char2.name}. I'm falling apart." - ${char1.name}, sobbing.`,
+                        `"Hey, hey... look at me. You're stronger than you think." - ${char2.name}, embracing them.`,
+                        `"I keep seeing their face... the moment they..." - ${char1.name}`,
+                        `"I know. But we have to keep going. For them. For everyone we've lost." - ${char2.name}, voice breaking.`
+                    ]
+                },
+                // Pop culture references
+                {
+                    event: `${char1.name} and ${char2.name} make pop culture comparisons.`,
+                    dialogue: [
+                        `"This is like if The Purge had a baby with Big Brother." - ${char1.name}`,
+                        `"More like if Instagram influencers tried to remake Halloween." - ${char2.name}`,
+                        `"I blame Netflix for making horror movies look fun." - ${char1.name}`,
+                        `"Note to self: cancel horror movie marathon subscription if we survive." - ${char2.name}`
+                    ]
+                },
+                // Gallows humor
+                {
+                    event: `${char1.name} and ${char2.name} cope with dark comedy.`,
+                    dialogue: [
+                        `"Well, this wasn't on my vision board for the year." - ${char1.name}`,
+                        `"Really? 'Survive serial killer' wasn't one of your goals?" - ${char2.name}, sarcastically.`,
+                        `"I was more focused on 'get abs' and 'learn Spanish.'" - ${char1.name}`,
+                        `"Plot twist: the killer only speaks Spanish and has amazing abs." - ${char2.name}`
+                    ]
+                }
+            ];
+            
+            // Add archetype-specific moments
+            if (char1.archetype.name === 'The Reporter' || char2.archetype.name === 'The Reporter') {
+                const reporter = char1.archetype.name === 'The Reporter' ? char1 : char2;
+                const other = reporter === char1 ? char2 : char1;
+                moments.push({
+                    event: `${reporter.name} interviews ${other.name} about the murders.`,
+                    dialogue: [
+                        `"Can you tell me exactly what you saw when ${gameState.characters.find(c => c.status === 'Dead')?.name || 'the victim'} was killed?" - ${reporter.name}, pulling out a notepad.`,
+                        `"Are you seriously interviewing me right now? People are dying!" - ${other.name}`,
+                        `"The truth matters. If I can document what's happening, maybe we can figure out who's doing this." - ${reporter.name}`,
+                        `"Fine, but make it quick. I don't want to be the next headline." - ${other.name}`
+                    ]
+                });
+            }
+            
+            if (char1.archetype.name === 'The Horror Fanatic' || char2.archetype.name === 'The Horror Fanatic') {
+                const fanatic = char1.archetype.name === 'The Horror Fanatic' ? char1 : char2;
+                const other = fanatic === char1 ? char2 : char1;
+                moments.push({
+                    event: `${fanatic.name} explains horror movie rules to ${other.name}.`,
+                    dialogue: [
+                        `"Okay, listen carefully. I've seen every slasher film ever made." - ${fanatic.name}`,
+                        `"Great, so you're an expert on fictional murder?" - ${other.name}, skeptical.`,
+                        `"Fiction that's keeping us alive! Rule one: never say 'I'll be right back.'" - ${fanatic.name}`,
+                        `"Rule two: don't investigate strange noises alone. Rule three: the killer always comes back for a final scare." - ${fanatic.name}`,
+                        `"And how exactly do these 'rules' help us?" - ${other.name}`,
+                        `"Because whoever's doing this is following the same playbook!" - ${fanatic.name}`
+                    ]
+                });
+            }
+            
+            if (char1.archetype.name === 'The Final Girl' || char2.archetype.name === 'The Final Girl') {
+                const finalGirl = char1.archetype.name === 'The Final Girl' ? char1 : char2;
+                const other = finalGirl === char1 ? char2 : char1;
+                moments.push({
+                    event: `${other.name} looks to ${finalGirl.name} for guidance.`,
+                    dialogue: [
+                        `"${finalGirl.name}, you always know what to do. How do we get out of this?" - ${other.name}`,
+                        `"I don't know! I'm just as scared as everyone else." - ${finalGirl.name}`,
+                        `"But you're the one who always keeps us together. We need you to be strong." - ${other.name}`,
+                        `"I'll try. But I can't do this alone. We all have to look out for each other." - ${finalGirl.name}`
+                    ]
+                });
+            }
+            
+            const selectedMoment = moments[Math.floor(Math.random() * moments.length)];
+            addEvent('event', selectedMoment.event);
+            selectedMoment.dialogue.forEach(line => {
+                addEvent('dialogue', line);
+            });
+        }
+
+        function addTensionMoment() {
+            const aliveChars = gameState.characters.filter(c => c.status === 'Alive');
+            if (aliveChars.length === 0) return;
+            
+            const character = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            
+            const tensionMoments = [
+                `${character.name} hears footsteps above them but when they call out, only silence answers.`,
+                `${character.name} finds a window that was definitely closed before, now standing wide open.`,
+                `${character.name} notices their reflection in a mirror... but there's a shadow behind them that shouldn't be there.`,
+                `${character.name} feels like they're being watched, constantly looking over their shoulder.`,
+                `${character.name} finds a note that simply says "YOU'RE NEXT" written in what looks like blood.`,
+                `${character.name} hears their name being whispered from somewhere in the house.`,
+                `${character.name} discovers that someone has been going through their personal belongings.`,
+                `${character.name} finds muddy footprints leading from the back door to their bedroom.`,
+                `${character.name} notices that all the family photos in the house have had the eyes scratched out.`,
+                `${character.name} realizes that someone has been eating their food while they were sleeping.`
+            ];
+            
+            const tensionDialogue = [
+                `"Did anyone else hear that, or am I having a stress-induced hallucination?" - ${character.name}, voice shaking.`,
+                `"I'm starting to think we're not alone in this house. Also, water is wet." - ${character.name}`,
+                `"Something is very, very wrong here. Like, Netflix-canceling-your-favorite-show wrong." - ${character.name}`,
+                `"I have the worst feeling that we're being played with like mice by a very psychotic cat." - ${character.name}`,
+                `"This is psychological torture. The killer wants us scared... and honestly? Mission accomplished." - ${character.name}`,
+                `"Is it just me, or does this feel like we're in a really twisted game show?" - ${character.name}`,
+                `"I keep waiting for someone to jump out and say 'gotcha!' but I'm starting to think this is real." - ${character.name}`,
+                `"Every horror movie I've ever watched is now feeling like a documentary." - ${character.name}`,
+                `"I'm getting major final destination vibes and I don't like it." - ${character.name}`,
+                `"Someone is definitely messing with us. The question is: how psychotic are they?" - ${character.name}`
+            ];
+            
+            addEvent('event', tensionMoments[Math.floor(Math.random() * tensionMoments.length)]);
+            addEvent('dialogue', tensionDialogue[Math.floor(Math.random() * tensionDialogue.length)]);
+        }
+
+        function addCharacterInteraction() {
+            const aliveChars = gameState.characters.filter(c => c.status === 'Alive');
+            if (aliveChars.length < 2) return;
+            
+            const char1 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            let char2 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            while (char2 === char1 && aliveChars.length > 1) {
+                char2 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            }
+            
+            const deadFriend = gameState.characters.find(c => c.status === 'Dead');
+            const killer = gameState.killers[0];
+            
+            const interactions = [
+                {
+                    event: `${char1.name} pulls ${char2.name} aside for a private conversation.`,
+                    dialogue: [
+                        `"${char2.name}, I need to tell you something about ${deadFriend?.name || 'what happened'}." - ${char1.name}, whispering urgently.`,
+                        `"What is it? You're scaring me." - ${char2.name}`,
+                        `"I saw someone in a black hoodie near ${deadFriend?.name || 'the victim'}'s room right before... you know." - ${char1.name}`,
+                        `"Did you see their face?" - ${char2.name}, gripping ${char1.name}'s arm.`,
+                        `"No, but they were tall... like ${killer.name} tall." - ${char1.name}, suspicious.`
+                    ]
+                },
+                {
+                    event: `${char1.name} and ${char2.name} search through ${deadFriend?.name || 'the victim'}'s belongings for clues.`,
+                    dialogue: [
+                        `"Look at this text message... '${deadFriend?.name || 'victim'}, meet me in the basement at midnight.'" - ${char1.name}`,
+                        `"Who's it from?" - ${char2.name}`,
+                        `"Unknown number... but whoever sent this lured ${deadFriend?.name || 'them'} down there." - ${char1.name}`,
+                        `"We need to tell the others about this." - ${char2.name}, grabbing the phone.`
+                    ]
+                },
+                {
+                    event: `${char1.name} confides their deepest fears to ${char2.name}.`,
+                    dialogue: [
+                        `"I keep having nightmares about ${deadFriend?.name || 'the victim'}. What if I'm next?" - ${char1.name}`,
+                        `"Don't think like that. We're going to figure this out." - ${char2.name}`,
+                        `"How can you be so sure? People are dying and we don't even know why!" - ${char1.name}`,
+                        `"Because giving up means the killer wins. And I'm not ready to let that happen." - ${char2.name}`
+                    ]
+                }
+            ];
+            
+            const selectedInteraction = interactions[Math.floor(Math.random() * interactions.length)];
+            addEvent('event', selectedInteraction.event);
+            selectedInteraction.dialogue.forEach(line => {
+                addEvent('dialogue', line);
+            });
+        }
+
+        function addRelationshipDrama() {
+            const aliveChars = gameState.characters.filter(c => c.status === 'Alive');
+            if (aliveChars.length < 3) return;
+            
+            const char1 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            let char2 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            let char3 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            
+            while (char2 === char1) char2 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            while (char3 === char1 || char3 === char2) char3 = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            
+            const dramas = [
+                {
+                    event: `Tension erupts between ${char1.name}, ${char2.name}, and ${char3.name}.`,
+                    dialogue: [
+                        `"I can't believe you're bringing this up NOW! We're literally in a horror movie!" - ${char1.name}, exasperated.`,
+                        `"When else am I supposed to talk about it? We might all be dead by morning! This could be my last chance!" - ${char2.name}`,
+                        `"Can we please focus on not dying instead of your relationship drama? Save it for Jerry Springer!" - ${char3.name}`,
+                        `"This IS about survival! Trust matters when there's a killer on the loose!" - ${char2.name}`,
+                        `"You want to talk about trust? Let's talk about what happened at Jake's party and my missing vape!" - ${char1.name}`
+                    ]
+                },
+                {
+                    event: `${char1.name} accuses ${char2.name} of hiding something, while ${char3.name} tries to mediate.`,
+                    dialogue: [
+                        `"You've been acting weird all night, ${char2.name}. And not your usual weird. Like, suspicious weird." - ${char1.name}`,
+                        `"Everyone's acting weird! We're in a literal nightmare situation!" - ${char2.name}`,
+                        `"Guys, maybe we should calm down and remember we're all traumatized..." - ${char3.name}`,
+                        `"No! I want answers. Why did you really come here tonight? And don't say 'for fun.'" - ${char1.name}`,
+                        `"I came here for the same reason as everyone else! To hang out and NOT get murdered!" - ${char2.name}`,
+                        `"Which was supposed to be the easy part of tonight!" - ${char1.name}, suspicious.`
+                    ]
+                },
+                {
+                    event: `Old grudges surface between the group as stress takes its toll.`,
+                    dialogue: [
+                        `"I never liked you anyway, ${char2.name}. This whole situation just proves I was right to avoid you." - ${char1.name}`,
+                        `"Oh, that's rich coming from you! Miss 'I-talk-behind-everyone's-back!'" - ${char2.name}`,
+                        `"Stop it, both of you! Fighting each other won't bring back ${gameState.characters.find(c => c.status === 'Dead')?.name || 'the dead'}!" - ${char3.name}`,
+                        `"Maybe if ${char2.name} hadn't suggested we come to this cursed place..." - ${char1.name}`,
+                        `"I didn't force anyone! You all chose to come! I didn't exactly advertise it as 'Murder Night!'" - ${char2.name}`
+                    ]
+                },
+                // Serious dramatic moment
+                {
+                    event: `The stress finally breaks ${char1.name}, leading to an emotional confrontation.`,
+                    dialogue: [
+                        `"I can't take this anymore! Everyone's dead and we're just standing around arguing!" - ${char1.name}, breaking down.`,
+                        `"${char1.name}, you need to breathe. We're all scared." - ${char2.name}, reaching out.`,
+                        `"Scared? SCARED?! People are dying! Our friends are GONE!" - ${char1.name}, sobbing.`,
+                        `"I know. I know. But we have to stick together or we'll all end up like them." - ${char2.name}, voice trembling.`,
+                        `"What if we already are? What if we're all just walking corpses who don't know it yet?" - ${char1.name}, devastated.`
+                    ]
+                }
+            ];
+            
+            const selectedDrama = dramas[Math.floor(Math.random() * dramas.length)];
+            addEvent('event', selectedDrama.event);
+            selectedDrama.dialogue.forEach(line => {
+                addEvent('dialogue', line);
+            });
+        }
+
+        function addJumpScare() {
+            const aliveChars = gameState.characters.filter(c => c.status === 'Alive');
+            if (aliveChars.length === 0) return;
+            
+            const character = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            const scares = [
+                `${character.name} jumps when a cat suddenly appears from behind the couch.`,
+                `${character.name} screams when ${aliveChars[Math.floor(Math.random() * aliveChars.length)].name} taps them on the shoulder unexpectedly.`,
+                `${character.name} nearly has a heart attack when the old house settles with a loud CREAK.`,
+                `${character.name} shrieks when they see their own reflection in a darkened window.`,
+                `${character.name} jumps out of their skin when the refrigerator's ice maker suddenly activates.`,
+                `${character.name} screams when a tree branch scrapes against the window.`
+            ];
+            
+            const scareDialogue = [
+                `"Jesus Christ! You scared the hell out of me!" - ${character.name}`,
+                `"My heart is literally going to explode! Like, literally!" - ${character.name}`,
+                `"I think I just aged ten years and lost five pounds!" - ${character.name}`,
+                `"That's it, I'm never watching horror movies again! This is too meta!" - ${character.name}`,
+                `"False alarm! Just my imagination running wild like a caffeinated squirrel." - ${character.name}`,
+                `"Note to self: invest in heart medication if I survive this." - ${character.name}`,
+                `"I think I just experienced every emotion known to humanity in three seconds." - ${character.name}`,
+                `"My fight-or-flight response just chose 'cry dramatically.'" - ${character.name}`,
+                `"I'm going to need so much therapy after this. Like, ALL the therapy." - ${character.name}`,
+                `"Well, that's going to haunt my dreams forever. Thanks for that." - ${character.name}`
+            ];
+            
+            addEvent('event', scares[Math.floor(Math.random() * scares.length)]);
+            addEvent('dialogue', scareDialogue[Math.floor(Math.random() * scareDialogue.length)]);
+        }
+
+        function addQuietMoment() {
+            const aliveChars = gameState.characters.filter(c => c.status === 'Alive');
+            if (aliveChars.length === 0) return;
+            
+            const character = aliveChars[Math.floor(Math.random() * aliveChars.length)];
+            const moments = [
+                `${character.name} sits alone, staring out the window at the dark forest beyond.`,
+                `${character.name} quietly examines old family photos on the mantelpiece.`,
+                `${character.name} finds an old diary and reads entries from happier times.`,
+                `${character.name} lights a candle, seeking comfort in the warm glow.`,
+                `${character.name} curls up with a blanket, trying to feel safe for a moment.`,
+                `${character.name} looks through their phone at photos of better times.`
+            ];
+            
+            const quietDialogue = [
+                `"I wonder if we'll ever feel normal again. Like, will I ever enjoy a peaceful shower?" - ${character.name}, softly.`,
+                `"This feels like a nightmare I can't wake up from. I keep pinching myself but it's not working." - ${character.name}`,
+                `"I miss when our biggest worry was passing finals and whether to get Starbucks or Dunkin'." - ${character.name}`,
+                `"What I wouldn't give for a boring, ordinary day right now. Even a Monday would be amazing." - ${character.name}`,
+                `"I hope our families know how much we love them. I should have called my mom more." - ${character.name}`,
+                `"If I survive this, I'm definitely switching my major to something safer. Like library science." - ${character.name}`,
+                `"I keep thinking about all the Netflix shows I'll never get to finish." - ${character.name}`,
+                `"This is the worst group project ever. And I've had some bad ones." - ${character.name}`,
+                `"I wonder if this is what characters in horror movies feel like before they become statistics." - ${character.name}`,
+                `"Right now I'd trade anything for my biggest problem to be choosing what to wear tomorrow." - ${character.name}`
+            ];
+            
+            addEvent('narrative', moments[Math.floor(Math.random() * moments.length)]);
+            addEvent('dialogue', quietDialogue[Math.floor(Math.random() * quietDialogue.length)]);
+        }
+
+        function addSequelReferences() {
+            const returningChars = gameState.characters.filter(c => c.isReturning && c.status === 'Alive');
+            if (returningChars.length === 0) return;
+            
+            const returner = returningChars[Math.floor(Math.random() * returningChars.length)];
+            const aliveChars = gameState.characters.filter(c => c.status === 'Alive');
+            const newbie = aliveChars.find(c => !c.isReturning) || aliveChars[0];
+            
+            const sequelMoments = [
+                {
+                    event: `${returner.name} shares their experience from the first movie with ${newbie.name}.`,
+                    dialogue: [
+                        `"I've been through this before. Trust me, it doesn't get easier." - ${returner.name}, grimly.`,
+                        `"What do you mean, 'been through this before'?" - ${newbie.name}, confused.`,
+                        `"Let's just say this isn't my first rodeo with homicidal maniacs." - ${returner.name}`,
+                        `"Are you telling me this has happened to you BEFORE?!" - ${newbie.name}, incredulous.`,
+                        `"Welcome to my nightmare sequel, kid. Try to keep up." - ${returner.name}`
+                    ]
+                },
+                {
+                    event: `${returner.name} has PTSD flashbacks about the previous murders.`,
+                    dialogue: [
+                        `"This place... it reminds me of last time. The same feeling of dread." - ${returner.name}, shaking.`,
+                        `"Last time? What last time?" - ${newbie.name}`,
+                        `"Different killer, same playbook. They all think they're so original." - ${returner.name}`,
+                        `"You're freaking me out. How are you so calm about this?" - ${newbie.name}`,
+                        `"Because panic got my friends killed last time. This time I'm ready." - ${returner.name}`
+                    ]
+                }
+            ];
+            
+            const selectedMoment = sequelMoments[Math.floor(Math.random() * sequelMoments.length)];
+            addEvent('event', selectedMoment.event);
+            selectedMoment.dialogue.forEach(line => {
+                addEvent('dialogue', line);
+            });
+        }
+
+        function addDiscoveryEvent() {
+            const discoveries = [
+                'The group finds evidence that the killer has been watching them for weeks.',
+                'A hidden camera is discovered in one of the bedrooms.',
+                'Strange symbols are found carved into the walls.',
+                'The phone lines have been cut - they\'re completely isolated.',
+                'A diary is found revealing the killer\'s twisted plans.',
+                'Photos of all the victims are discovered pinned to a wall with red X\'s marked over the dead ones.',
+                'A collection of personal items from each victim is found in a creepy shrine.',
+                'The group discovers a detailed floor plan of the house with escape routes blocked off.',
+                'Hidden speakers are found throughout the house - someone has been listening to everything.',
+                'A countdown timer is discovered with just hours remaining until "Phase 2."',
+                'The basement reveals a makeshift torture chamber that\'s been prepared for weeks.',
+                'Security monitors show the killer has been watching them since they arrived.',
+                'A list of names is found with most crossed out - and the survivors\' names are still on it.',
+                'The group finds evidence that this exact scenario has happened before with other victims.',
+                'A hidden room behind a bookshelf contains detailed psychological profiles of everyone.',
+                'The wifi router reveals the killer has been monitoring all their online activity.',
+                'A fake ID and multiple identities are discovered - the killer isn\'t who they seem.',
+                'Maps of the local area show all escape routes have been systematically blocked.'
+            ];
+            
+            addEvent('event', discoveries[Math.floor(Math.random() * discoveries.length)]);
+        }
+
+        function performRandomAttack() {
+            const aliveCharacters = gameState.characters.filter(c => c.status === 'Alive');
+            if (aliveCharacters.length === 0) return;
+            
+            const victim = aliveCharacters[Math.floor(Math.random() * aliveCharacters.length)];
+            const otherCharacters = gameState.characters.filter(c => c.status === 'Alive' && c !== victim);
+            const witness = otherCharacters.length > 0 ? otherCharacters[Math.floor(Math.random() * otherCharacters.length)] : null;
+            
+            const attackScenarios = [
+                `${victim.name} is in the kitchen making a sandwich when WHAM! The killer appears and slashes them across the arm with a butcher knife. ${victim.name} grabs a frying pan and BONK! knocks the killer backwards, then runs screaming into the living room.`,
+                `${victim.name} opens a closet door and the killer tumbles out like an overstuffed coat rack. They wrestle briefly before ${victim.name} knees them in the groin and bolts. "Sorry! Not sorry!"`,
+                `The killer grabs ${victim.name} from behind in the hallway, but ${victim.name} throws their elbow back, connects with the killer's nose (CRUNCH!), and breaks free. Blood spatters everywhere.`,
+                `${victim.name} is cornered in the basement. The killer swings a crowbar, missing their head by inches and embedding it in the wall. "Thanks for the workout!" ${victim.name} quips, diving behind some boxes.`,
+                `The killer attacks ${victim.name} with garden shears by the back door, but ${victim.name} grabs a nearby gnome and hurls it at the killer's face. "Take that, you psycho!" They escape through the dog door.`,
+                `${victim.name} is doing laundry when the killer jumps out of the washing machine. ${victim.name} throws detergent in their eyes and runs. "Clean up your act!" they yell over their shoulder.`,
+                `The killer corners ${victim.name} in the garage, revving a chainsaw. ${victim.name} starts the lawnmower and has an epic power tool duel before escaping on the riding mower.`,
+                `${victim.name} is trapped in the bathroom when the killer kicks down the door. ${victim.name} sprays them with toilet cleaner and climbs out the window. "That's for ruining my skincare routine!"`,
+                `The killer attacks ${victim.name} with a baseball bat in the living room. ${victim.name} uses a couch cushion as a shield and counter-attacks with a lamp. "Home decorating can be dangerous!"`,
+                `${victim.name} is studying when the killer tries to strangle them with an ethernet cable. ${victim.name} hits them with a thick textbook and runs. "Knowledge is power!" they shout.`,
+                `The killer ambushes ${victim.name} in the pantry with a meat tenderizer. ${victim.name} throws flour in their face and escapes. "Looks like you're the one getting tenderized!"`,
+                `${victim.name} is in the attic when the killer attacks with a pitchfork. ${victim.name} swings from a rope like Tarzan and kicks them through the floorboards. "Timber!"`,
+                `The killer tries to push ${victim.name} down the stairs, but ${victim.name} grabs the banister and kicks them down instead. "Gravity's a bitch!" they call down.`,
+                `${victim.name} is trapped in the hot tub when the killer appears with an electric cattle prod. ${victim.name} splashes them and short-circuits the weapon, then escapes. "Shocking behavior!"`
+            ];
+            
+            const scenario = attackScenarios[Math.floor(Math.random() * attackScenarios.length)];
+            addEvent('attack', `⚠️ ${scenario}`);
+            
+            const survivorLines = [
+                `"${witness?.name || 'Someone'}! The killer just tried to turn me into human confetti!" - ${victim.name}, bleeding but alive.`,
+                `"I always knew my self-defense classes would pay off! Eat that, murderer!" - ${victim.name}, adrenaline pumping.`,
+                `"Note to self: next party, bring mace AND a rocket launcher!" - ${victim.name}, catching their breath.`,
+                `"This is why I have trust issues! And why I'm switching to online shopping!" - ${victim.name}, hands shaking.`,
+                `"I think I just used up all my luck for the next five years!" - ${victim.name}, looking around frantically.`,
+                `"That was like a really violent episode of home improvement!" - ${victim.name}, wiping blood.`,
+                `"I'm definitely writing a scathing Yelp review about this place!" - ${victim.name}, still in shock.`,
+                `"Who knew gardening tools could be so terrifying?!" - ${victim.name}, breathing heavily.`,
+                `"I survived! Take that, Final Destination!" - ${victim.name}, pumping their fist.`,
+                `"My mom always said I was a fighter. Guess she was right!" - ${victim.name}, proud but terrified.`,
+                `"I feel like I'm in a horror movie... oh wait, I AM in a horror movie!" - ${victim.name}, realizing.`,
+                `"Someone needs to call 911... if anyone still has cell service!" - ${victim.name}, checking their phone.`,
+                `"I'm never watching another slasher film after this!" - ${victim.name}, traumatized.`,
+                `"Is it weird that I'm kind of proud of myself right now?" - ${victim.name}, conflicted.`,
+                `"I think I pulled something during that fight. Do we have any ice?" - ${victim.name}, checking for injuries.`,
+                `"Well, that's going to need therapy. Like, a LOT of therapy." - ${victim.name}, processing.`,
+                `"I fought a serial killer and lived! That's definitely going on my resume!" - ${victim.name}, oddly excited.`,
+                `"Mental note: learn karate. Also, buy pepper spray. And maybe a tank." - ${victim.name}, planning ahead.`,
+                `"I can't wait to trauma-dump about this in therapy!" - ${victim.name}, surprisingly upbeat.`,
+                `"That was more cardio than I've done all year!" - ${victim.name}, out of breath.`
+            ];
+            
+            addEvent('dialogue', survivorLines[Math.floor(Math.random() * survivorLines.length)]);
+            
+            attackCharacter(victim, gameState.currentAct);
+        }
+
+        function endAct1() {
+            addEvent('title', '🎭 END OF ACT 1 🎭');
+            gameState.currentAct = 2;
+            updateProgress();
+            
+            // Queue up Act 2 start
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => startAct2(),
+                delay: 2000
+            });
+            
+            updateStoryStatus();
+        }
+
+        function startAct2() {
+            // Clear the story queue and start fresh for Act 2
+            gameState.storyQueue = [];
+            gameState.currentStoryIndex = 0;
+            
+            // Queue up Act 2 events
+            gameState.storyQueue.push({
+                type: 'title',
+                text: '🎬 ACT 2 - THE BODY COUNT RISES 🎬',
+                delay: 1000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'narrative',
+                text: 'Paranoia sets in as the survivors realize the killer is among them...',
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => generateEdgicRatings(1),
+                delay: 500
+            });
+            
+            // Multiple kills and events for Act 2
+            const aliveCount = gameState.characters.filter(c => c.status === 'Alive').length;
+            const killsNeeded = Math.floor(aliveCount * 0.4);
+            
+            // Add character development and tension between kills
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addCharacterMoment(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addTensionMoment(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addQuietMoment(),
+                delay: 1500
+            });
+            
+            // Add potential sequel reference
+            if (gameState.characters.some(c => c.isReturning)) {
+                gameState.storyQueue.push({
+                    type: 'function',
+                    func: () => {
+                        if (Math.random() < 0.4) addSequelReferences();
+                    },
+                    delay: 1500
+                });
+            }
+            
+            for (let i = 0; i < killsNeeded; i++) {
+                gameState.storyQueue.push({
+                    type: 'function',
+                    func: () => {
+                        if (Math.random() < 0.7) {
+                            performRandomKill();
+                        } else {
+                            performRandomAttack();
+                        }
+                    },
+                    delay: 2500
+                });
+                
+                // Add character moments between kills
+                if (i < killsNeeded - 1) {
+                    gameState.storyQueue.push({
+                        type: 'function',
+                        func: () => addRelationshipDrama(),
+                        delay: 2000
+                    });
+                    
+                    gameState.storyQueue.push({
+                        type: 'function',
+                        func: () => addCharacterMoment(),
+                        delay: 2000
+                    });
+                    
+                    gameState.storyQueue.push({
+                        type: 'function',
+                        func: () => addTensionMoment(),
+                        delay: 1500
+                    });
+                    
+                    gameState.storyQueue.push({
+                        type: 'function',
+                        func: () => addJumpScare(),
+                        delay: 1500
+                    });
+                }
+            }
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addMajorReveal(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addCharacterMoment(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addCharacterInteraction(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addTensionMoment(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addQuietMoment(),
+                delay: 1500
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => addRedHerring(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => endAct2(),
+                delay: 1000
+            });
+            
+            updateMovieControls();
+            
+            if (gameState.autoPlay) {
+                playNextStoryEvent();
+            } else {
+                updateStoryStatus();
+            }
+        }
+
+        function addMajorReveal() {
+            const reveals = [
+                'The killer\'s true identity is starting to become clear...',
+                'A shocking connection between the victims is discovered.',
+                'The motive for the killings is finally revealed.',
+                'A survivor realizes they knew the killer all along.'
+            ];
+            
+            addEvent('reveal', reveals[Math.floor(Math.random() * reveals.length)]);
+        }
+
+        function endAct2() {
+            addEvent('title', '🎭 END OF ACT 2 🎭');
+            gameState.currentAct = 3;
+            updateProgress();
+            
+            // Generate edgic for Act 2
+            generateEdgicRatings(2);
+            
+            // Queue up Act 3 start
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => startAct3(),
+                delay: 2000
+            });
+            
+            updateStoryStatus();
+        }
+
+        function startAct3() {
+            // Clear the story queue and start fresh for Act 3
+            gameState.storyQueue = [];
+            gameState.currentStoryIndex = 0;
+            
+            // Queue up Act 3 events
+            gameState.storyQueue.push({
+                type: 'title',
+                text: '🎬 ACT 3 - THE FINAL CONFRONTATION 🎬',
+                delay: 1000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'narrative',
+                text: 'The final survivors face off against the killer in a deadly game of cat and mouse...',
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => revealKiller(),
+                delay: 2000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => finalConfrontation(),
+                delay: 3000
+            });
+            
+            gameState.storyQueue.push({
+                type: 'function',
+                func: () => {
+                    gameState.movieComplete = true;
+                    updateMovieControls();
+                    updateStoryStatus();
+                },
+                delay: 1000
+            });
+            
+            updateMovieControls();
+            
+            if (gameState.autoPlay) {
+                playNextStoryEvent();
+            } else {
+                updateStoryStatus();
+            }
+        }
+
+        function revealKiller() {
+            // Killer reveal
+            const killerNames = gameState.killers.map(k => k.name).join(' and ');
+            addEvent('reveal', `🎭 THE KILLER IS REVEALED: ${killerNames}!`);
+            
+            // Generate motive
+            const motives = generateKillerMotive();
+            addEvent('reveal', `💭 MOTIVE: ${motives}`);
+            
+            // Killer speech
+            const speech = generateKillerSpeech();
+            addEvent('dialogue', `"${speech}" - ${gameState.killers[0].name}`);
+        }
+
+        function generateKillerMotive() {
+            const victims = gameState.characters.filter(c => c.status === 'Dead' && !gameState.killers.includes(c));
+            const survivors = gameState.characters.filter(c => c.status === 'Alive' && !gameState.killers.includes(c));
+            const firstVictim = victims.find(v => v.deathAct === 1);
+            const killerName = gameState.killers[0].name;
+            
+            const motives = [
+                `${killerName} discovered that ${firstVictim?.name || 'the victim'} was responsible for spreading rumors that ruined their reputation and caused their family to disown them.`,
+                `${killerName} blamed the group for their younger sibling's suicide after being bullied by the popular kids.`,
+                `${killerName} was being blackmailed by ${firstVictim?.name || 'the victim'} who had evidence of a dark secret from their past.`,
+                `${killerName} was seeking revenge for a car accident that killed their best friend, believing the victims were responsible.`,
+                `${killerName} felt betrayed and abandoned by their so-called friends who never supported them when they needed it most.`
+            ];
+            
+            return motives[Math.floor(Math.random() * motives.length)];
+        }
+
+        function generateKillerSpeech() {
+            const speeches = [
+                "You all thought you were so perfect, so untouchable. But I showed you the truth!",
+                "Every cut, every scream was for my brother! You destroyed my family!",
+                "This isn't a movie, it's real life. And in real life, the killer wins!",
+                "You never even noticed me, did you? Well, you'll remember me now!",
+                "I gave you all a chance to confess, but you chose to stay silent. Now you pay!",
+                "The game was rigged from the start. You were never going to survive!",
+                "You pathetic insects! You think your precious friendship can save you now?",
+                "All those years of humiliation, of being ignored... THIS is my revenge!",
+                "I am the shadow that follows, the nightmare that haunts! You cannot escape me!",
+                "Your blood will paint these walls red! Justice demands sacrifice!",
+                "I am become death, destroyer of your miserable little world!",
+                "You laughed at me, mocked me, cast me aside! Now who's laughing?!",
+                "Every breath you take from this moment on is borrowed time!",
+                "I have become something beyond your comprehension - pure vengeance!",
+                "You created this monster! Now face the consequences of your cruelty!",
+                "Death is too good for you! But it's all I can offer in this fleeting life!",
+                "I am the reckoning you never saw coming! The bill for your sins!",
+                "Your screams are music to my ears! Symphony of suffering!",
+                "I tried to be good, to fit in... but you showed me that evil is the only truth!",
+                "Welcome to my masterpiece! Each death, a brushstroke in my art of revenge!"
+            ];
+            
+            return speeches[Math.floor(Math.random() * speeches.length)];
+        }
+
+        function finalConfrontation() {
+            const survivors = gameState.characters.filter(c => c.status === 'Alive' && !gameState.killers.includes(c));
+            
+            if (survivors.length === 0) {
+                // Killer wins
+                addEvent('reveal', '💀 THE KILLER WINS! No survivors remain...');
+                addEvent('title', '🎬 THE END 🎬');
+                generateEdgicRatings(3);
+                return;
+            }
+            
+            // Ensure at least one survivor dies in Act 3 for drama
+            const survivorsToKill = Math.max(1, Math.floor(survivors.length * 0.4)); // Kill at least 1, up to 40% of remaining
+            const survivorsToAttack = Math.min(survivors.length - survivorsToKill, 3); // Attack some others but don't kill them
+            
+            // Select victims for final deaths
+            const shuffledSurvivors = [...survivors].sort(() => Math.random() - 0.5);
+            const victimsToKill = shuffledSurvivors.slice(0, survivorsToKill);
+            const victimsToAttack = shuffledSurvivors.slice(survivorsToKill, survivorsToKill + survivorsToAttack);
+            
+            // Final confrontation begins
+            addEvent('event', 'The final confrontation erupts into chaos as the killer makes their last desperate stand!');
+            
+            // Kill some survivors during the battle
+            victimsToKill.forEach((victim, index) => {
+                const killer = gameState.killers[Math.floor(Math.random() * gameState.killers.length)];
+                
+                const finalKillScenarios = [
+                    `${victim.name} heroically tries to protect the others but ${killer.name} catches them off guard and delivers a fatal blow!`,
+                    `${victim.name} gets cornered during the chaos and ${killer.name} shows no mercy - another life claimed in the final battle!`,
+                    `${victim.name} makes a brave last stand but ${killer.name} overpowers them in the brutal melee!`,
+                    `${victim.name} almost escapes but ${killer.name} grabs them at the last second - their sacrifice won't be forgotten!`,
+                    `${victim.name} fights valiantly but ${killer.name} strikes them down in the climactic struggle!`,
+                    `${victim.name} tries to help a fallen friend and ${killer.name} takes advantage of their compassion - a tragic end!`,
+                    `${victim.name} refuses to abandon the others and pays the ultimate price when ${killer.name} attacks!`
+                ];
+                
+                const scenario = finalKillScenarios[Math.floor(Math.random() * finalKillScenarios.length)];
+                addEvent('death', `💀 FINAL ACT DEATH: ${scenario}`);
+                
+                const finalWords = [
+                    `"At least... the others... will make it..." - ${victim.name}, with their dying breath`,
+                    `"Tell my family... I tried to be brave..." - ${victim.name}, fading away`,
+                    `"Don't let... this be... for nothing..." - ${victim.name}, looking at the other survivors`,
+                    `"I'm sorry... I couldn't... protect everyone..." - ${victim.name}, tears in their eyes`,
+                    `"Make sure... they pay... for what they've done..." - ${victim.name}, determined to the end`,
+                    `"It's up to you now... finish this..." - ${victim.name}, passing the torch`,
+                    `"I'm not afraid... anymore..." - ${victim.name}, finding peace`,
+                    `"Remember me... as I lived... not how I died..." - ${victim.name}, smiling weakly`
+                ];
+                
+                addEvent('dialogue', finalWords[Math.floor(Math.random() * finalWords.length)]);
+                killCharacter(victim, killer, 3);
+                
+                // Add reaction from other survivors
+                const remainingSurvivors = gameState.characters.filter(c => c.status === 'Alive' && !gameState.killers.includes(c));
+                if (remainingSurvivors.length > 0) {
+                    const reactor = remainingSurvivors[Math.floor(Math.random() * remainingSurvivors.length)];
+                    const reactions = [
+                        `"NO! ${victim.name}!" - ${reactor.name}, screaming in anguish`,
+                        `"This has to stop! No more death!" - ${reactor.name}, filled with rage`,
+                        `"${victim.name}, I won't let you die in vain!" - ${reactor.name}, determined`,
+                        `"We have to end this madness NOW!" - ${reactor.name}, rallying the others`
+                    ];
+                    addEvent('dialogue', reactions[Math.floor(Math.random() * reactions.length)]);
+                }
+            });
+            
+            // Attack but don't kill some other survivors
+            victimsToAttack.forEach(victim => {
+                const attackMethods = [
+                    `${victim.name} is slashed across the chest during the fight but keeps going`,
+                    `${victim.name} is thrown against the wall but struggles back to their feet`,
+                    `${victim.name} is stabbed in the shoulder but refuses to give up`,
+                    `${victim.name} takes a brutal hit but their determination keeps them fighting`,
+                    `${victim.name} is knocked down but crawls back into the fray`
+                ];
+                const method = attackMethods[Math.floor(Math.random() * attackMethods.length)];
+                addEvent('attack', `⚠️ ${method}!`);
+                attackCharacter(victim, 3);
+            });
+            
+            // Check if anyone is left to face the killer
+            const finalSurvivors = gameState.characters.filter(c => c.status === 'Alive' && !gameState.killers.includes(c));
+            
+            if (finalSurvivors.length === 0) {
+                // Everyone died - killer wins
+                addEvent('reveal', '💀 THE KILLER WINS! All survivors have fallen in the final battle...');
+                addEvent('title', '🎬 THE END - KILLER VICTORY 🎬');
+                generateEdgicRatings(3);
+                return;
+            }
+            
+            // Final battle with remaining survivors
+            const finalGirl = finalSurvivors.find(s => s.archetype.name === 'The Final Girl') || finalSurvivors[0];
+            const killerName = gameState.killers[0].name;
+            const otherSurvivor = finalSurvivors.find(s => s !== finalGirl);
+            
+            addEvent('event', `${finalGirl.name} faces ${killerName} in the ultimate showdown while standing over the bodies of the fallen!`);
+            
+            if (otherSurvivor) {
+                addEvent('dialogue', `"This is for ${victimsToKill[0]?.name || 'everyone we lost'}!" - ${otherSurvivor.name}, backing up ${finalGirl.name}`);
+            }
+            addEvent('dialogue', `"You killed ${victimsToKill.map(v => v.name).join(' and ')}! This ends NOW!" - ${finalGirl.name}, furious and determined`);
+            
+            // Defeat killer
+            defeatKiller(finalGirl);
+        }
+
+        function defeatKiller(survivor) {
+            const methods = [
+                'stabs the killer with their own weapon',
+                'pushes the killer off a balcony',
+                'sets the killer on fire',
+                'shoots the killer with a hidden gun',
+                'electrocutes the killer',
+                'crushes the killer with heavy machinery'
+            ];
+            
+            const method = methods[Math.floor(Math.random() * methods.length)];
+            
+            addEvent('event', `${survivor.name} ${method}!`);
+            addEvent('dialogue', `"It's over..." - ${survivor.name}, breathing heavily`);
+            addEvent('title', '🎬 THE END 🎬');
+            
+            // Kill the killers
+            gameState.killers.forEach(killer => {
+                killer.status = 'Dead';
+                killer.actStatuses[3] = 'Killed';
+                killer.killedBy = survivor.name;
+                killer.deathAct = 3;
+            });
+            
+            // Generate final edgic ratings
+            generateEdgicRatings(3);
+        }
+
+        function generateEdgicRatings(act) {
+            gameState.characters.forEach(character => {
+                // Update actStatuses for dead characters in future acts
+                if (character.status === 'Dead') {
+                    for (let futureAct = character.deathAct + 1; futureAct <= 3; futureAct++) {
+                        character.actStatuses[futureAct] = 'N/A';
+                    }
+                }
+                
+                if (character.status === 'Dead' && character.deathAct < act) {
+                    character.edgic[act] = 'N/A';
+                    return;
+                }
+                
+                if (character.status === 'Dead' && character.deathAct === act) {
+                    // Death episode gets high visibility - more dramatic ratings with varied tones, more OTT
+                    const deathRatings = ['CP5', 'MOR5', 'MORP5', 'CPM5', 'OTTM4', 'CPN4', 'MORN4', 'OTT4', 'OTTN4', 'OTTP4', 'OTT3', 'OTTM3'];
+                    character.edgic[act] = deathRatings[Math.floor(Math.random() * deathRatings.length)];
+                    return;
+                }
+                
+                if (character.actStatuses[act] === 'Attacked') {
+                    // Attacked characters get moderate to high visibility with varied tones, some OTT for drama
+                    const attackRatings = ['MOR4', 'CPP3', 'MOR3', 'CP3', 'MORP4', 'MORP3', 'CPN3', 'MORN3', 'OTT3', 'OTTM3', 'OTTN3', 'OTTP3'];
+                    character.edgic[act] = attackRatings[Math.floor(Math.random() * attackRatings.length)];
+                    return;
+                }
+                
+                if (gameState.killers.includes(character)) {
+                    // Killers need different edits depending on the act
+                    if (act === 3) {
+                        // Act 3: Killer reveal - MUST be dramatic NEGATIVE or MIXED visibility - NO POSITIVE EVER
+                        const killerRevealRatings = ['OTTN5', 'OTTN5', 'CPN5', 'OTTM5', 'OTTM4', 'CPM5', 'MORN5', 'OTTN4', 'CPN4', 'CPM4', 'MORN4', 'OTTM3', 'CPN3'];
+                        character.edgic[act] = killerRevealRatings[Math.floor(Math.random() * killerRevealRatings.length)];
+                    } else {
+                        // Act 1-2: Hidden killer - mix of ratings, occasionally negative/mixed for hints, some OTT for dramatic moments
+                        const hiddenKillerRatings = ['MOR2', 'MOR3', 'UTR2', 'MORN2', 'CPM2', 'MOR1', 'MORN1', 'CPN2', 'UTRN2', 'MORM2', 'OTTM2', 'OTTN2', 'OTT2'];
+                        character.edgic[act] = hiddenKillerRatings[Math.floor(Math.random() * hiddenKillerRatings.length)];
+                    }
+                    return;
+                }
+                
+                // Final girl gets strong edits that build over time with positive/neutral tones
+                if (character.archetype.name === 'The Final Girl') {
+                    if (act === 1) {
+                        const finalGirlEarly = ['CP3', 'MORP3', 'MOR3', 'CPP2', 'MORP2'];
+                        character.edgic[act] = finalGirlEarly[Math.floor(Math.random() * finalGirlEarly.length)];
+                    } else if (act === 2) {
+                        const finalGirlMid = ['CP4', 'CPP3', 'MORP4', 'MOR4', 'CPP4'];
+                        character.edgic[act] = finalGirlMid[Math.floor(Math.random() * finalGirlMid.length)];
+                    } else {
+                        const finalGirlEnd = ['CP5', 'CPP5', 'MORP5', 'CP4', 'CPP4'];
+                        character.edgic[act] = finalGirlEnd[Math.floor(Math.random() * finalGirlEnd.length)];
+                    }
+                    return;
+                }
+                
+                // Other main character archetypes get varied tones including some CP ratings
+                if (character.archetype.name === 'The Hero' || character.archetype.name === 'The Best Friend' || character.archetype.name === 'The Boyfriend') {
+                    const mainCharacterChance = Math.random();
+                    if (mainCharacterChance < 0.4) { // 40% chance for CP rating
+                        const mainCharCPRatings = ['CP3', 'CPP3', 'CPN2', 'CP2', 'CPM3', 'CPP2', 'CPN3'];
+                        character.edgic[act] = mainCharCPRatings[Math.floor(Math.random() * mainCharCPRatings.length)];
+                    } else {
+                        const mainCharMORRatings = ['MOR3', 'MORP3', 'MOR4', 'MORN2', 'MORP2', 'MORM3'];
+                        character.edgic[act] = mainCharMORRatings[Math.floor(Math.random() * mainCharMORRatings.length)];
+                    }
+                    return;
+                }
+                
+                // Suspicious characters get more complex edits with negative/mixed tones, some OTT
+                if (character.archetype.name === 'The Bad Boy' || character.archetype.name === 'The Outcast') {
+                    const suspiciousRatings = ['CPM3', 'MORN3', 'CPN2', 'MOR3', 'MORN2', 'CPM2', 'MORM2', 'UTRN2', 'OTT2', 'OTTM2', 'OTTN2'];
+                    character.edgic[act] = suspiciousRatings[Math.floor(Math.random() * suspiciousRatings.length)];
+                    return;
+                }
+                
+                // Comic relief and other light characters - mostly positive/neutral
+                if (character.archetype.name === 'The Stoner' || character.archetype.name === 'The Party Girl') {
+                    const comicRatings = ['MOR2', 'MORP2', 'UTR2', 'MOR1', 'UTRP2', 'MOR3', 'MORP1', 'UTRP1'];
+                    character.edgic[act] = comicRatings[Math.floor(Math.random() * comicRatings.length)];
+                    return;
+                }
+                
+                // New archetypes - Reporter and Horror Fanatic get decent visibility with varied tones, some OTT
+                if (character.archetype.name === 'The Reporter') {
+                    const reporterRatings = ['MOR3', 'CPP3', 'MOR4', 'CP3', 'MORP3', 'CP2', 'MORP4', 'CPN2', 'OTT3', 'OTTP3', 'OTTM2'];
+                    character.edgic[act] = reporterRatings[Math.floor(Math.random() * reporterRatings.length)];
+                    return;
+                }
+                
+                if (character.archetype.name === 'The Horror Fanatic') {
+                    const fanRatings = ['MOR3', 'MORP3', 'MOR2', 'CP3', 'MORP4', 'CPP2', 'MORN2', 'CPM2', 'OTT2', 'OTTP2', 'OTTM3'];
+                    character.edgic[act] = fanRatings[Math.floor(Math.random() * fanRatings.length)];
+                    return;
+                }
+                
+                // Early boot candidates - mix of tones but lower visibility
+                if (character.archetype.name === 'The Flirt' || character.archetype.name === 'The Rich Girl' || character.archetype.name === 'The Drama Queen') {
+                    const earlyBootRatings = ['MOR1', 'MOR2', 'UTR1', 'UTR2', 'MORN1', 'MORP2', 'UTRN1', 'UTRP1', 'MORM1'];
+                    character.edgic[act] = earlyBootRatings[Math.floor(Math.random() * earlyBootRatings.length)];
+                    return;
+                }
+                
+                // Everyone else gets varied tones with MOR being most common, sprinkle in some OTT
+                const regularRatings = ['MOR1', 'MOR2', 'MOR2', 'MOR3', 'UTR1', 'UTR2', 'MORP2', 'MORN2', 'UTRP1', 'UTRN1', 'MORM1', 'UTRM1', 'OTT1', 'OTT2', 'OTTP1', 'OTTN1', 'OTTM1'];
+                character.edgic[act] = regularRatings[Math.floor(Math.random() * regularRatings.length)];
+            });
+        }
+
+        // NEW STORY CONTROL FUNCTIONS
+        function updateMovieControls() {
+            const continueBtn = document.getElementById('continue-btn');
+            const autoplayBtn = document.getElementById('autoplay-btn');
+            const skipBtn = document.getElementById('skip-btn');
+            const viewResultsBtn = document.getElementById('view-results-btn');
+            
+            if (gameState.movieComplete) {
+                continueBtn.style.display = 'none';
+                autoplayBtn.style.display = 'none';
+                skipBtn.style.display = 'none';
+                viewResultsBtn.style.display = 'inline-block';
+            } else if (gameState.autoPlay) {
+                continueBtn.style.display = 'none';
+                autoplayBtn.textContent = 'Disable Autoplay';
+                skipBtn.style.display = 'inline-block';
+                viewResultsBtn.style.display = 'none';
+            } else {
+                continueBtn.style.display = 'inline-block';
+                autoplayBtn.textContent = 'Enable Autoplay';
+                skipBtn.style.display = 'inline-block';
+                viewResultsBtn.style.display = 'none';
+            }
+        }
+
+        function updateStoryStatus() {
+            const statusDiv = document.getElementById('story-status');
+            
+            if (gameState.movieComplete) {
+                statusDiv.textContent = 'Movie Complete! Click "View Final Results" to see the final tables.';
+                statusDiv.style.color = '#4CAF50';
+            } else if (gameState.isKillerMode && gameState.killerPlayer && document.getElementById('killer-action-area')?.innerHTML.includes('KILLER ACTIONS AVAILABLE')) {
+                statusDiv.textContent = `🔪 KILLER TURN - Choose your next move as ${gameState.killerPlayer.name}`;
+                statusDiv.style.color = '#ff4444';
+            } else if (gameState.autoPlay) {
+                statusDiv.textContent = `Autoplay Mode - Act ${gameState.currentAct} (${gameState.currentStoryIndex}/${gameState.storyQueue.length} events)`;
+                statusDiv.style.color = '#ff4444';
+            } else {
+                statusDiv.textContent = `Manual Mode - Act ${gameState.currentAct} - Click "Continue Story" for next event (${gameState.currentStoryIndex}/${gameState.storyQueue.length})`;
+                statusDiv.style.color = '#ccc';
+            }
+        }
+
+        function continueStory() {
+            if (gameState.currentStoryIndex < gameState.storyQueue.length) {
+                playNextStoryEvent();
+            } else {
+                // Check if movie is complete
+                if (gameState.movieComplete) {
+                    updateMovieControls();
+                }
+                updateStoryStatus();
+                
+                // Check if we should offer killer actions
+                if (gameState.isKillerMode && gameState.killerPlayer && !gameState.movieComplete) {
+                    const aliveVictims = gameState.characters.filter(c => 
+                        c.status === 'Alive' && c.id !== gameState.killerPlayer.id
+                    );
+                    
+                    if (aliveVictims.length > 0 && Math.random() < 0.4) { // 40% chance to offer killer actions
+                        showKillerActions();
+                        document.getElementById('force-killer-action').style.display = 'inline-block';
+                        document.getElementById('killer-help-text').style.display = 'block';
+                        updateStoryStatus();
+                    }
+                }
+            }
+        }
+
+        function playNextStoryEvent() {
+            if (gameState.currentStoryIndex >= gameState.storyQueue.length) {
+                // Story queue is empty
+                updateStoryStatus();
+                
+                // Check if we should offer killer actions when queue is empty
+                if (gameState.isKillerMode && gameState.killerPlayer && !gameState.movieComplete) {
+                    const aliveVictims = gameState.characters.filter(c => 
+                        c.status === 'Alive' && c.id !== gameState.killerPlayer.id
+                    );
+                    
+                    if (aliveVictims.length > 0) {
+                        showKillerActions();
+                        document.getElementById('force-killer-action').style.display = 'inline-block';
+                        document.getElementById('killer-help-text').style.display = 'block';
+                        updateStoryStatus();
+                    }
+                }
+                return;
+            }
+            
+            const event = gameState.storyQueue[gameState.currentStoryIndex];
+            
+            if (event.type === 'function') {
+                event.func();
+            } else {
+                addEvent(event.type, event.text);
+            }
+            
+            gameState.currentStoryIndex++;
+            updateStoryStatus();
+            
+            // Check for killer action opportunities during story progression
+            if (gameState.isKillerMode && gameState.killerPlayer && !gameState.movieComplete) {
+                const aliveVictims = gameState.characters.filter(c => 
+                    c.status === 'Alive' && c.id !== gameState.killerPlayer.id
+                );
+                
+                if (aliveVictims.length > 0) {
+                    // Random chance to offer killer actions during story events
+                    if (Math.random() < 0.3) { // 30% chance during story progression
+                        setTimeout(() => {
+                            showKillerActions();
+                            document.getElementById('force-killer-action').style.display = 'inline-block';
+                            document.getElementById('killer-help-text').style.display = 'block';
+                            updateStoryStatus();
+                        }, 1000);
+                        return; // Don't auto-continue, wait for killer action
+                    }
+                }
+            }
+            
+            if (gameState.autoPlay && gameState.currentStoryIndex < gameState.storyQueue.length) {
+                setTimeout(() => playNextStoryEvent(), event.delay || 2000);
+            }
+        }
+
+        function toggleAutoplay() {
+            gameState.autoPlay = !gameState.autoPlay;
+            updateMovieControls();
+            updateStoryStatus();
+            
+            if (gameState.autoPlay && !gameState.movieComplete) {
+                playNextStoryEvent();
+            }
+        }
+
+        function skipToEnd() {
+            // Process all remaining events instantly
+            while (gameState.currentStoryIndex < gameState.storyQueue.length) {
+                const event = gameState.storyQueue[gameState.currentStoryIndex];
+                if (event.type === 'function') {
+                    event.func();
+                } else {
+                    addEvent(event.type, event.text);
+                }
+                gameState.currentStoryIndex++;
+            }
+            
+            // Skip to final act if not there yet
+            if (gameState.currentAct === 1) {
+                endAct1();
+                skipAct2();
+                skipAct3();
+            } else if (gameState.currentAct === 2) {
+                endAct2();
+                skipAct3();
+            } else if (gameState.currentAct === 3) {
+                // Already in final act, just complete it
+                gameState.movieComplete = true;
+            }
+            
+            updateMovieControls();
+            updateStoryStatus();
+        }
+
+        function skipAct2() {
+            gameState.currentAct = 2;
+            updateProgress();
+            addEvent('title', '🎬 ACT 2 - THE BODY COUNT RISES 🎬');
+            generateEdgicRatings(1);
+            
+            // Quick kills
+            const aliveCount = gameState.characters.filter(c => c.status === 'Alive').length;
+            const killsNeeded = Math.floor(aliveCount * 0.4);
+            for (let i = 0; i < killsNeeded; i++) {
+                performRandomKill();
+            }
+            
+            endAct2();
+        }
+
+        function skipAct3() {
+            gameState.currentAct = 3;
+            updateProgress();
+            addEvent('title', '🎬 ACT 3 - THE FINAL CONFRONTATION 🎬');
+            generateEdgicRatings(2);
+            revealKiller();
+            finalConfrontation();
+            gameState.movieComplete = true;
+        }
+
+        function viewResults() {
+            showResults();
+        }
+
+        function recordMovieInFranchise() {
+            // Create movie record
+            const movieRecord = {
+                title: gameState.movieTitle,
+                year: gameState.movieYear,
+                characters: {}
+            };
+            
+            // Record each character's status in this movie
+            gameState.characters.forEach(character => {
+                let status;
+                if (gameState.killers.includes(character)) {
+                    status = 'Killer';
+                } else if (character.status === 'Alive') {
+                    status = 'Survived';
+                } else {
+                    status = 'Killed';
+                }
+                
+                movieRecord.characters[character.name] = {
+                    archetype: character.archetype.name,
+                    status: status,
+                    isReturning: character.isReturning || false
+                };
+                
+                // Add to all characters map if not already there
+                if (!franchiseHistory.allCharacters.has(character.name)) {
+                    franchiseHistory.allCharacters.set(character.name, {
+                        archetype: character.archetype.name,
+                        appearances: []
+                    });
+                }
+                
+                // Add this movie appearance
+                franchiseHistory.allCharacters.get(character.name).appearances.push({
+                    movieIndex: franchiseHistory.movies.length,
+                    status: status,
+                    isReturning: character.isReturning || false
+                });
+            });
+            
+            // Add movie to franchise history
+            franchiseHistory.movies.push(movieRecord);
+        }
+
+        function displayFranchiseHistory() {
+            if (franchiseHistory.movies.length === 0) return;
+            
+            const container = document.createElement('div');
+            container.className = 'franchise-history';
+            container.innerHTML = `
+                <h3>🎬 Franchise History</h3>
+                <p style="color: #ccc; margin-bottom: 20px;">Track every character across all movies in the franchise. 🔁 indicates returning characters.</p>
+                <table class="final-table" id="franchise-table">
+                    <thead>
+                        <tr>
+                            <th>Character</th>
+                            <th>Archetype</th>
+                            ${franchiseHistory.movies.map((movie, index) => 
+                                `<th style="min-width: 120px;">${movie.title}<br><small style="opacity: 0.7;">${movie.year}</small></th>`
+                            ).join('')}
+                        </tr>
+                    </thead>
+                    <tbody id="franchise-tbody"></tbody>
+                </table>
+            `;
+            
+            // Insert after edgic table
+            const edgicTable = document.querySelector('.edgic-table');
+            edgicTable.parentNode.insertBefore(container, edgicTable.nextSibling);
+            
+            const tbody = document.getElementById('franchise-tbody');
+            
+            // Sort characters by first appearance, then by name
+            const sortedCharacters = Array.from(franchiseHistory.allCharacters.entries())
+                .sort((a, b) => {
+                    const aFirstMovie = a[1].appearances[0].movieIndex;
+                    const bFirstMovie = b[1].appearances[0].movieIndex;
+                    if (aFirstMovie !== bFirstMovie) {
+                        return aFirstMovie - bFirstMovie;
+                    }
+                    return a[0].localeCompare(b[0]); // Sort by name if same movie
+                });
+            
+            sortedCharacters.forEach(([characterName, characterData]) => {
+                const row = document.createElement('tr');
+                
+                // Character name and archetype
+                row.innerHTML = `
+                    <td><strong>${characterName}</strong></td>
+                    <td>${characterData.archetype}</td>
+                `;
+                
+                // Status in each movie
+                franchiseHistory.movies.forEach((movie, movieIndex) => {
+                    const cell = document.createElement('td');
+                    cell.style.textAlign = 'center';
+                    cell.style.padding = '8px 4px';
+                    
+                    const appearance = characterData.appearances.find(app => app.movieIndex === movieIndex);
+                    
+                    if (appearance) {
+                        let statusClass = '';
+                        let statusText = appearance.status;
+                        
+                        if (appearance.status === 'Survived') {
+                            statusClass = 'status-alive';
+                        } else if (appearance.status === 'Killed') {
+                            statusClass = 'status-dead';
+                        } else if (appearance.status === 'Killer') {
+                            statusClass = 'status-killer';
+                        }
+                        
+                        // Show returning indicator more prominently
+                        if (appearance.isReturning) {
+                            cell.innerHTML = `
+                                <span class="${statusClass}">${statusText}</span>
+                                <br><small style="color: #4CAF50;">🔁 Returning</small>
+                            `;
+                        } else {
+                            cell.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
+                        }
+                    } else {
+                        // Character not in this movie
+                        cell.innerHTML = '<span class="status-n/a">—</span>';
+                        cell.style.background = '#1a1a1a';
+                        cell.style.opacity = '0.5';
+                    }
+                    
+                    row.appendChild(cell);
+                });
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function displayKillerReveal() {
+            const container = document.getElementById('killer-reveal-section');
+            const killerNames = gameState.killers.map(k => `${k.name} (${k.archetype.name})`).join(', ');
+            
+            container.innerHTML = `
+                <div class="killer-reveal">
+                    <h3>KILLER(S) REVEALED</h3>
+                    <div style="font-size: 1.5rem; margin: 15px 0;">${killerNames}</div>
+                    <div class="motive-text">The truth comes out in the final act...</div>
+                </div>
+            `;
+        }
+
+        function displayFinalBodyCount() {
+            const tbody = document.getElementById('final-body-tbody');
+            tbody.innerHTML = '';
+            
+            // Sort by death order (dead first, then alive)
+            const sortedCharacters = [...gameState.characters].sort((a, b) => {
+                if (a.status === 'Dead' && b.status === 'Alive') return 1;
+                if (a.status === 'Alive' && b.status === 'Dead') return -1;
+                if (a.deathAct && b.deathAct) return b.deathAct - a.deathAct;
+                return 0;
+            });
+            
+            sortedCharacters.forEach(character => {
+                const row = document.createElement('tr');
+                
+                const finalStatus = gameState.killers.includes(character) ? 'Killer' : character.status;
+                const statusClass = finalStatus === 'Killer' ? 'status-killer' : 
+                                  finalStatus === 'Alive' ? 'status-alive' : 'status-dead';
+                
+                row.innerHTML = `
+                    <td>${character.name}</td>
+                    <td>${character.archetype.name}</td>
+                    <td><span class="status-${character.actStatuses[1].toLowerCase()}">${character.actStatuses[1]}</span></td>
+                    <td><span class="status-${character.actStatuses[2].toLowerCase()}">${character.actStatuses[2]}</span></td>
+                    <td><span class="status-${character.actStatuses[3].toLowerCase()}">${character.actStatuses[3]}</span></td>
+                    <td><span class="${statusClass}">${finalStatus}</span></td>
+                    <td>${character.killedBy || 'N/A'}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function showResults() {
+            // Remove any existing franchise history table first
+            const existingFranchiseTable = document.querySelector('.franchise-history');
+            if (existingFranchiseTable) {
+                existingFranchiseTable.remove();
+            }
+            
+            // Record this movie in franchise history
+            recordMovieInFranchise();
+            
+            document.getElementById('movie-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+            
+            document.getElementById('final-title').textContent = `${gameState.movieTitle} - Final Results`;
+            
+            displayKillerReveal();
+            displayFinalBodyCount();
+            displayEdgicAnalysis();
+            displayFranchiseHistory();
+        }
+
+        function displayEdgicAnalysis() {
+            const tbody = document.getElementById('edgic-tbody');
+            tbody.innerHTML = '';
+            
+            // Sort by death order - those who died first at bottom
+            const sortedCharacters = [...gameState.characters].sort((a, b) => {
+                if (a.status === 'Dead' && b.status === 'Alive') return 1;
+                if (a.status === 'Alive' && b.status === 'Dead') return -1;
+                if (a.deathAct && b.deathAct) return b.deathAct - a.deathAct;
+                return 0;
+            });
+            
+            sortedCharacters.forEach(character => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${character.name}</td>
+                    <td>${character.archetype.name}</td>
+                    <td><span class="edgic-cell ${getEdgicClass(character.edgic[1])}">${character.edgic[1]}</span></td>
+                    <td><span class="edgic-cell ${getEdgicClass(character.edgic[2])}">${character.edgic[2]}</span></td>
+                    <td><span class="edgic-cell ${getEdgicClass(character.edgic[3])}">${character.edgic[3]}</span></td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Add edgic legend after the table
+            addEdgicLegend();
+        }
+
+        function addEdgicLegend() {
+            // Check if legend already exists
+            if (document.querySelector('.edgic-legend')) return;
+            
+            const legendDiv = document.createElement('div');
+            legendDiv.className = 'edgic-legend';
+            legendDiv.style.marginTop = '20px';
+            legendDiv.style.padding = '20px';
+            legendDiv.style.background = '#2a2a2a';
+            legendDiv.style.borderRadius = '8px';
+            legendDiv.style.border = '1px solid #555';
+            
+            legendDiv.innerHTML = `
+                <h4 style="color: #ff4444; margin-bottom: 15px; text-transform: uppercase;">📊 Edgic Rating Legend</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div>
+                        <h5 style="color: #fff; margin-bottom: 10px;">Visibility Types:</h5>
+                        <div style="margin-bottom: 8px;"><span class="edgic-cell edgic-cp" style="display: inline-block; width: 50px; margin-right: 10px;">CP</span> <strong>Complex Personality</strong> - Strategic, gets personal content</div>
+                        <div style="margin-bottom: 8px;"><span class="edgic-cell edgic-mor" style="display: inline-block; width: 50px; margin-right: 10px;">MOR</span> <strong>Middle of the Road</strong> - Moderate screen time, balanced edit</div>
+                        <div style="margin-bottom: 8px;"><span class="edgic-cell edgic-utr" style="display: inline-block; width: 50px; margin-right: 10px;">UTR</span> <strong>Under the Radar</strong> - Minimal screen time</div>
+                        <div style="margin-bottom: 8px;"><span class="edgic-cell edgic-ott" style="display: inline-block; width: 50px; margin-right: 10px;">OTT</span> <strong>Over the Top</strong> - Dramatic, excessive reactions</div>
+                        <div style="margin-bottom: 8px;"><span class="edgic-cell edgic-na" style="display: inline-block; width: 50px; margin-right: 10px;">N/A</span> <strong>Not Available</strong> - Character is dead</div>
+                    </div>
+                    <div>
+                        <h5 style="color: #fff; margin-bottom: 10px;">Rating Scale:</h5>
+                        <div style="margin-bottom: 8px;"><strong>1-5</strong> - Visibility level (1 = low, 5 = high)</div>
+                        <div style="margin-bottom: 8px;"><strong>P</strong> - Positive tone (heroic, sympathetic)</div>
+                        <div style="margin-bottom: 8px;"><strong>N</strong> - Negative tone (villainous, unsympathetic)</div>
+                        <div style="margin-bottom: 8px;"><strong>M</strong> - Mixed tone (both positive and negative)</div>
+                        <div style="margin-bottom: 8px;"><em>No letter</em> - Neutral tone</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; padding: 10px; background: rgba(255, 68, 68, 0.1); border-radius: 5px; font-size: 0.9rem; color: #ccc;">
+                    <strong>Color Guide:</strong> 
+                    <span style="color: #DDA0DD;">■</span> <strong>Positive (P)</strong> - Light purple/pink tones | 
+                    <span style="color: #FFD700;">■</span> <strong>Neutral</strong> - Gold/teal tones | 
+                    <span style="color: #9370DB;">■</span> <strong>Negative (N)</strong> - Dark purple/red tones | 
+                    <span style="color: #8FBC8F;">■</span> <strong>Mixed (M)</strong> - Green tones
+                    <br><strong>Examples:</strong> CP5 = Complex Personality with maximum visibility | MORN3 = Middle of the Road with negative tone and moderate visibility | UTRP1 = Under the radar with positive tone and minimal screen time
+                </div>
+            `;
+            
+            // Insert after the edgic table
+            const edgicTable = document.querySelector('.edgic-table');
+            edgicTable.appendChild(legendDiv);
+        }
+
+        function getEdgicClass(rating) {
+            if (rating === 'N/A') return 'edgic-na';
+            if (rating === 'DEAD') return 'edgic-dead';
+            if (rating === 'INV') return 'edgic-inv';
+            
+            // Convert rating to lowercase for easier matching
+            const lowerRating = rating.toLowerCase();
+            
+            // UTR ratings
+            if (lowerRating.includes('utr')) {
+                if (lowerRating.includes('p')) return 'edgic-utrp';
+                if (lowerRating.includes('n')) return 'edgic-utrn';
+                if (lowerRating.includes('m')) return 'edgic-utrm';
+                return 'edgic-utr';
+            }
+            
+            // MOR ratings
+            if (lowerRating.includes('mor')) {
+                if (lowerRating.includes('p')) return 'edgic-morp';
+                if (lowerRating.includes('n')) return 'edgic-morn';
+                if (lowerRating.includes('m')) return 'edgic-morm';
+                return 'edgic-mor';
+            }
+            
+            // CP ratings
+            if (lowerRating.includes('cp')) {
+                if (lowerRating.includes('p')) return 'edgic-cpp';
+                if (lowerRating.includes('n')) return 'edgic-cpn';
+                if (lowerRating.includes('m')) return 'edgic-cpm';
+                return 'edgic-cp';
+            }
+            
+            // OTT ratings
+            if (lowerRating.includes('ott')) {
+                if (lowerRating.includes('p')) return 'edgic-ottp';
+                if (lowerRating.includes('n')) return 'edgic-ottn';
+                if (lowerRating.includes('m')) return 'edgic-ottm';
+                return 'edgic-ott';
+            }
+            
+            // Fallback
+            return 'edgic-inv';
+        }
+
+        function createSequel() {
+            const survivors = gameState.characters.filter(c => c.status === 'Alive' && !gameState.killers.includes(c));
+            
+            if (survivors.length === 0) {
+                alert('No survivors to continue the franchise! Maybe try a reboot instead?');
+                return;
+            }
+            
+            // Show survivor selection screen
+            showSurvivorSelection(survivors);
+        }
+        
+        function showSurvivorSelection(survivors) {
+            // Hide results screen and show selection
+            document.getElementById('results-screen').classList.add('hidden');
+            
+            // Create survivor selection screen
+            const selectionScreen = document.createElement('div');
+            selectionScreen.id = 'survivor-selection-screen';
+            selectionScreen.innerHTML = `
+                <div class="container">
+                    <div class="header">
+                        <h1>🎬 CREATE SEQUEL 🎬</h1>
+                        <div class="subtitle">Configure your sequel and select returning survivors</div>
+                        <div class="tagline">Their experience might just save them... or make them bigger targets</div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>Sequel Configuration</h2>
+                        <div class="form-group">
+                            <label for="sequel-title">Sequel Title</label>
+                            <input type="text" id="sequel-title" value="${generateSequelTitle(gameState.movieTitle)}" placeholder="Enter sequel title...">
+                        </div>
+                        <div class="form-group">
+                            <label for="sequel-year">Release Year</label>
+                            <input type="number" id="sequel-year" min="1970" max="2030" value="${gameState.movieYear + 1}" placeholder="${gameState.movieYear + 1}">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-characters-count">Number of New Characters to Add</label>
+                            <select id="new-characters-count">
+                                <option value="2">2 new characters</option>
+                                <option value="3">3 new characters</option>
+                                <option value="4" selected>4 new characters</option>
+                                <option value="5">5 new characters</option>
+                                <option value="6">6 new characters</option>
+                                <option value="7">7 new characters</option>
+                                <option value="8">8 new characters</option>
+                                <option value="9">9 new characters</option>
+                                <option value="10">10 new characters</option>
+                                <option value="12">12 new characters</option>
+                                <option value="15">15 new characters</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sequel-game-mode">Game Mode</label>
+                            <select id="sequel-game-mode">
+                                <option value="spectator">Spectator (Killer hidden)</option>
+                                <option value="killer">Play as Killer</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>Select Returning Survivors</h2>
+                        <p style="color: #ccc; margin-bottom: 20px;">Choose which survivors will return with boosted stats and traumatic memories:</p>
+                        <div id="survivor-selection-grid" class="cast-grid"></div>
+                        <div style="text-align: center; margin-top: 30px;">
+                            <button class="btn" onclick="confirmSurvivorSelection()">Create Sequel with Selected Survivors</button>
+                            <button class="btn btn-secondary" onclick="cancelSurvivorSelection()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(selectionScreen);
+            
+            // Populate survivor selection grid
+            const grid = document.getElementById('survivor-selection-grid');
+            survivors.forEach((survivor, index) => {
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                card.innerHTML = `
+                    <div class="character-header">
+                        <div class="character-avatar">👤</div>
+                        <div class="character-info">
+                            <h3>${survivor.name}</h3>
+                            <div class="archetype">${survivor.archetype.name}</div>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        ${Object.entries(survivor.stats).map(([stat, value]) => `
+                            <div class="stat">
+                                <div class="stat-label">${stat.charAt(0).toUpperCase() + stat.slice(1)}</div>
+                                <div class="stat-bar">
+                                    <div class="stat-fill" style="width: ${value * 10}%"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="survival-chance">
+                        Current: ${survivor.survivalChance.toFixed(1)}%
+                        <br><span style="color: #4CAF50;">Sequel: ${calculateSurvivalChance({
+                            ...survivor.stats,
+                            survival: Math.min(10, survivor.stats.survival + 2),
+                            intelligence: Math.min(10, survivor.stats.intelligence + 1),
+                            stealth: Math.min(10, survivor.stats.stealth + 1)
+                        }).toFixed(1)}%</span>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <label style="display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <input type="checkbox" id="survivor-${index}" checked style="margin-right: 10px; transform: scale(1.5);">
+                            <span style="color: #4CAF50; font-weight: bold;">Return for Sequel</span>
+                        </label>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            // Store survivors data for later use
+            window.availableSurvivors = survivors;
+        }
+        
+        function confirmSurvivorSelection() {
+            const selectedSurvivors = [];
+            
+            // Get selected survivors
+            window.availableSurvivors.forEach((survivor, index) => {
+                const checkbox = document.getElementById(`survivor-${index}`);
+                if (checkbox && checkbox.checked) {
+                    selectedSurvivors.push(survivor);
+                }
+            });
+            
+            if (selectedSurvivors.length === 0) {
+                alert('You must select at least one survivor to return! Otherwise it\'s not really a sequel...');
+                return;
+            }
+            
+            // Get sequel configuration
+            const sequelTitle = document.getElementById('sequel-title').value || generateSequelTitle(gameState.movieTitle);
+            const sequelYear = parseInt(document.getElementById('sequel-year').value) || (gameState.movieYear + 1);
+            const newCharactersCount = parseInt(document.getElementById('new-characters-count').value) || 4;
+            const sequelGameMode = document.getElementById('sequel-game-mode').value;
+            
+            // Remove selection screen
+            const selectionScreen = document.getElementById('survivor-selection-screen');
+            if (selectionScreen) {
+                selectionScreen.remove();
+            }
+            
+            // Create sequel with selected survivors and configuration
+            createSequelWithSurvivors(selectedSurvivors, sequelTitle, sequelYear, newCharactersCount, sequelGameMode);
+        }
+        
+        function cancelSurvivorSelection() {
+            // Remove selection screen and return to results
+            const selectionScreen = document.getElementById('survivor-selection-screen');
+            if (selectionScreen) {
+                selectionScreen.remove();
+            }
+            document.getElementById('results-screen').classList.remove('hidden');
+        }
+        
+        function createSequelWithSurvivors(selectedSurvivors, sequelTitle, sequelYear, newCharactersCount, sequelGameMode) {
+            // Remove any existing franchise history table (will be recreated with updated data)
+            const existingFranchiseTable = document.querySelector('.franchise-history');
+            if (existingFranchiseTable) {
+                existingFranchiseTable.remove();
+            }
+            
+            // Reset everything but keep selected survivors
+            gameState = {
+                characters: [],
+                killers: [],
+                gameMode: sequelGameMode,
+                currentAct: 1,
+                movieTitle: sequelTitle,
+                movieYear: sequelYear,
+                events: [],
+                isKillerMode: sequelGameMode === 'killer',
+                killerPlayer: null,
+                autoPlay: false,
+                movieComplete: false,
+                storyQueue: [],
+                currentStoryIndex: 0
+            };
+            
+            // Add selected survivors as returning characters with boosted stats
+            selectedSurvivors.forEach((survivor, index) => {
+                const returningSurvivor = {
+                    ...survivor,
+                    id: index,
+                    status: 'Alive',
+                    actStatuses: { 1: 'Alive', 2: 'Alive', 3: 'Alive' },
+                    killedBy: null,
+                    deathAct: null,
+                    edgic: { 1: 'UTR1', 2: 'UTR1', 3: 'UTR1' },
+                    isReturning: true
+                };
+                
+                // Boost survivor stats (they learned from last time)
+                returningSurvivor.stats.survival = Math.min(10, returningSurvivor.stats.survival + 2);
+                returningSurvivor.stats.intelligence = Math.min(10, returningSurvivor.stats.intelligence + 1);
+                returningSurvivor.stats.stealth = Math.min(10, returningSurvivor.stats.stealth + 1);
+                returningSurvivor.survivalChance = calculateSurvivalChance(returningSurvivor.stats);
+                
+                gameState.characters.push(returningSurvivor);
+            });
+            
+            // Add new characters based on user selection
+            const usedNames = new Set(selectedSurvivors.map(s => s.name));
+            const usedArchetypes = new Set(selectedSurvivors.map(s => s.archetype.name));
+            
+            for (let i = 0; i < newCharactersCount; i++) {
+                let name, archetype;
+                
+                // Get unique name
+                do {
+                    name = names[Math.floor(Math.random() * names.length)];
+                } while (usedNames.has(name));
+                usedNames.add(name);
+                
+                // Get unique archetype
+                do {
+                    archetype = archetypes[Math.floor(Math.random() * archetypes.length)];
+                } while (usedArchetypes.has(archetype.name) && usedArchetypes.size < archetypes.length);
+                usedArchetypes.add(archetype.name);
+                
+                const newCharacter = {
+                    id: selectedSurvivors.length + i,
+                    name: name,
+                    archetype: archetype,
+                    stats: { ...archetype.stats },
+                    status: 'Alive',
+                    actStatuses: { 1: 'Alive', 2: 'Alive', 3: 'Alive' },
+                    killedBy: null,
+                    deathAct: null,
+                    survivalChance: calculateSurvivalChance(archetype.stats),
+                    edgic: { 1: 'UTR1', 2: 'UTR1', 3: 'UTR1' },
+                    isReturning: false
+                };
+                
+                gameState.characters.push(newCharacter);
+            }
+            
+            // Select new killers (survivors can't be killers in sequels - they've suffered enough)
+            const newCharacters = gameState.characters.filter(c => !c.isReturning);
+            const killerCount = Math.random() < 0.7 ? 1 : 2; // Sequels usually have 1-2 killers
+            
+            gameState.killers = [];
+            const killerIndices = [];
+            while (killerIndices.length < killerCount && newCharacters.length > 0) {
+                const index = Math.floor(Math.random() * newCharacters.length);
+                if (!killerIndices.includes(index)) {
+                    killerIndices.push(index);
+                    gameState.killers.push(newCharacters[index]);
+                }
+            }
+            
+            // Switch to setup screen
+            document.getElementById('setup-screen').classList.remove('hidden');
+            document.getElementById('cast-customization').classList.remove('hidden');
+            
+            // Update the movie title and year fields
+            document.getElementById('movie-title').value = gameState.movieTitle;
+            document.getElementById('movie-year').value = gameState.movieYear;
+            document.getElementById('game-mode').value = gameState.gameMode;
+            
+            // Show sequel cast
+            displayCastCustomization();
+            
+            // Show sequel message
+            setTimeout(() => {
+                alert(`🎬 SEQUEL CREATED! 🎬\n\n"${gameState.movieTitle}" (${gameState.movieYear})\n\nMode: ${gameState.gameMode === 'killer' ? 'Play as Killer' : 'Spectator'}\n${selectedSurvivors.length} selected survivor(s) return with boosted stats and ${newCharactersCount} new victims... I mean, characters!\n\nReturning characters are highlighted in green and have improved survival skills from their previous experience.${gameState.gameMode === 'killer' ? '\n\nYou can now select which character to play as the killer!' : ''}`);
+            }, 500);
+        }
+        
+        function generateSequelTitle(originalTitle) {
+            const sequelFormats = [
+                `${originalTitle} 2: The Return`,
+                `${originalTitle} 2: Back for Blood`,
+                `${originalTitle}: The Sequel`,
+                `${originalTitle} II: Revenge`,
+                `${originalTitle} 2: Electric Boogaloo`,
+                `${originalTitle}: Still Screaming`,
+                `${originalTitle} 2: The Reckoning`,
+                `${originalTitle}: Resurrection`,
+                `${originalTitle} 2: Final Chapter`,
+                `${originalTitle}: Legacy`,
+                `${originalTitle} 2: New Blood`,
+                `${originalTitle}: Reloaded`,
+                `Return to ${originalTitle}`,
+                `${originalTitle}: The Next Level`,
+                `${originalTitle} 2: Unfinished Business`
+            ];
+            
+            return sequelFormats[Math.floor(Math.random() * sequelFormats.length)];
+        }
+
+        function resetSimulator() {
+            gameState = {
+                characters: [],
+                killers: [],
+                gameMode: 'spectator',
+                currentAct: 1,
+                movieTitle: '',
+                movieYear: new Date().getFullYear(),
+                events: [],
+                isKillerMode: false,
+                killerPlayer: null,
+                autoPlay: false,
+                movieComplete: false,
+                storyQueue: [],
+                currentStoryIndex: 0
+            };
+            
+            // Reset franchise history for completely new franchise
+            franchiseHistory = {
+                movies: [],
+                allCharacters: new Map()
+            };
+            
+            document.getElementById('results-screen').classList.add('hidden');
+            document.getElementById('movie-screen').classList.add('hidden');
+            document.getElementById('setup-screen').classList.remove('hidden');
+            document.getElementById('cast-customization').classList.add('hidden');
+            
+            // Reset form values
+            document.getElementById('movie-title').value = '';
+            document.getElementById('movie-year').value = new Date().getFullYear();
+            document.getElementById('game-mode').value = 'spectator';
+            document.getElementById('cast-size').value = '8';
+            document.getElementById('killer-count').value = 'random';
+            
+            // Clear logs
+            document.getElementById('movie-log').innerHTML = '';
+            
+            // Remove any existing franchise history table
+            const existingFranchiseTable = document.querySelector('.franchise-history');
+            if (existingFranchiseTable) {
+                existingFranchiseTable.remove();
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Slasher Movie Simulator loaded successfully!');
+        });
+    </script>
+</body>
+</html>
