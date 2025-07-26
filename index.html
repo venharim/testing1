@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+function getEdgicClass(rating) {<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -454,6 +454,22 @@
                         <option value="3">3 Killers</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label for="content-warnings">Content Warnings</label>
+                    <select id="content-warnings">
+                        <option value="true" selected>Show Content Warnings</option>
+                        <option value="false">Hide Content Warnings</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="story-speed">Story Speed</label>
+                    <select id="story-speed">
+                        <option value="0.5">Slow (2x delay)</option>
+                        <option value="1.0" selected>Normal</option>
+                        <option value="1.5">Fast (1.5x speed)</option>
+                        <option value="2.0">Very Fast (2x speed)</option>
+                    </select>
+                </div>
                 <button class="btn" onclick="setupCast()" id="create-cast-btn">Create Cast</button>
                 <button class="btn btn-secondary" onclick="alert('Test button works!')" style="margin-left: 10px;">Test Button</button>
             </div>
@@ -463,6 +479,9 @@
                 <div id="cast-container" class="cast-grid"></div>
                 <button class="btn" onclick="startMovie()">Start Horror Movie</button>
                 <button class="btn btn-secondary" onclick="randomizeCast()">Randomize All</button>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn btn-secondary" onclick="showSaveMenu()">💾 Save/Load</button>
+                </div>
             </div>
         </div>
 
@@ -482,6 +501,7 @@
                     <button class="btn" id="autoplay-btn" onclick="toggleAutoplay()">Enable Autoplay</button>
                     <button class="btn btn-secondary" id="skip-btn" onclick="skipToEnd()" style="display: none;">Skip to End</button>
                     <button class="btn" id="view-results-btn" onclick="viewResults()" style="display: none;">View Final Results</button>
+                    <button class="btn btn-secondary" onclick="showSaveMenu()">💾 Save/Load</button>
                 </div>
                 <div id="story-status" style="text-align: center; color: #ccc; margin: 10px 0;"></div>
             </div>
@@ -490,11 +510,11 @@
                 <h2>Killer Actions</h2>
                 <div id="killer-targets"></div>
                 <div style="text-align: center; margin-top: 15px;">
-                    <button class="btn" id="force-killer-action" onclick="forceKillerAction()" style="display: none; background: #8B0000; font-size: 18px; padding: 20px 30px;">
-                        🔪 TAKE KILLER ACTION NOW 🔪
+                    <button class="btn" id="force-killer-action" onclick="window.forceKillerAction()" style="display: none; background: #8B0000; font-size: 18px; padding: 20px 30px;">
+                        🔪 Don't Get Caught! 🔪
                     </button>
                     <p id="killer-help-text" style="color: #ff6666; margin-top: 10px; display: none;">
-                        Click "Continue Story" to get killer opportunities, or use the button above to force an action anytime!
+                        Click "Continue Story" to get killer opportunities!
                     </p>
                 </div>
             </div>
@@ -540,8 +560,16 @@
                     </table>
                 </div>
 
+                <div class="section">
+                    <h3>📊 Movie Statistics</h3>
+                    <div id="movie-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <!-- Stats will be populated here -->
+                    </div>
+                </div>
+
                 <button class="btn" onclick="createSequel()">Create Sequel</button>
                 <button class="btn btn-secondary" onclick="resetSimulator()">Create New Horror</button>
+                <button class="btn btn-secondary" onclick="showSaveMenu()">💾 Save/Load</button>
             </div>
         </div>
     </div>
@@ -576,7 +604,10 @@
             'Abigail', 'Michael', 'Emily', 'Elijah', 'Elizabeth', 'Daniel', 'Mila', 'Matthew', 'Ella', 'Jackson',
             'Madison', 'David', 'Scarlett', 'Sebastian', 'Victoria', 'Joseph', 'Aria', 'Samuel', 'Grace', 'John',
             'Chloe', 'Owen', 'Camila', 'Wyatt', 'Penelope', 'Jack', 'Riley', 'Luke', 'Layla', 'Jayden',
-            'Zoey', 'Dylan', 'Nora', 'Grayson', 'Lily', 'Levi', 'Eleanor', 'Isaac', 'Hannah', 'Gabriel'
+            'Zoey', 'Dylan', 'Nora', 'Grayson', 'Lily', 'Levi', 'Eleanor', 'Isaac', 'Hannah', 'Gabriel',
+            'Julian', 'Mateo', 'Anthony', 'Jaxon', 'Andrew', 'Joshua', 'Christopher', 'Taylor', 'Jordan', 'Casey',
+            'Morgan', 'Quinn', 'Sage', 'River', 'Phoenix', 'Rowan', 'Skylar', 'Cameron', 'Blake', 'Dakota',
+            'Finley', 'Hayden', 'Kendall', 'Logan', 'Parker', 'Aubrey', 'Ellie', 'Stella', 'Natalie', 'Zoe'
         ];
 
         // Game state
@@ -593,8 +624,16 @@
             autoPlay: false,
             movieComplete: false,
             storyQueue: [],
-            currentStoryIndex: 0
+            currentStoryIndex: 0,
+            // Phase 1 additions
+            killMethods: {},
+            contentWarnings: true,
+            storySpeed: 1.0
         };
+
+        // Save system
+        const SAVE_SLOTS = 5;
+        let currentSaveSlot = 1;
 
         // Franchise history tracking
         let franchiseHistory = {
@@ -784,6 +823,9 @@
             updateProgress();
             updateMovieControls();
             startAct1();
+            
+            // Auto-save when starting movie
+            autoSave();
         }
 
         function displayKillerSelection() {
@@ -1349,21 +1391,30 @@
             const victim = aliveCharacters[Math.floor(Math.random() * aliveCharacters.length)];
             const killer = gameState.killers[Math.floor(Math.random() * gameState.killers.length)];
             
-            const openingKills = [
-                `${victim.name} answers the phone at exactly 11:47 PM. "Hello?" Click. They hang up and walk to the kitchen for a late-night snack when WHAM! A meat cleaver splits their skull like a watermelon.`,
-                `${victim.name} is taking a steamy shower when the lights flicker. "Hello? Is someone there?" The shower curtain gets yanked back and a masked figure plunges a kitchen knife into their chest seven times.`,
-                `${victim.name} hears scratching at the window. "Probably just a tree branch," they mutter, opening the blinds. CRASH! The killer bursts through the glass, tackling them to the ground and strangling them with piano wire.`,
-                `${victim.name} is alone in the garage working on their car when the garage door suddenly slams shut. The killer emerges from behind a tool cabinet and impales them on a garden rake.`,
-                `${victim.name} is studying late at night when they hear the doorbell ring. "Pizza's here!" they call out, opening the door without checking. Instead of pizza, they get a chainsaw to the face.`,
-                `${victim.name} is doing laundry in the basement when the washing machine starts making weird noises. They lean in to check and the killer grabs them from behind, shoving their head into the spin cycle.`,
-                `${victim.name} decides to take out the trash during a thunderstorm. Lightning flashes as they reach the dumpster, revealing the killer standing behind it. A machete swing later, and ${victim.name} becomes part of the garbage.`,
-                `${victim.name} is home alone watching TV when the power goes out. They grab a flashlight and head to the breaker box, only to find the killer waiting with a pair of bolt cutters. SNAP! goes more than just the power.`,
-                `${victim.name} is making a midnight snack when they hear their dog barking outside. "What's wrong, boy?" They open the back door to find their dog... and the killer holding a bloody shovel.`,
-                `${victim.name} is video chatting with friends when the wifi cuts out. "Ugh, typical!" They head upstairs to reset the router and walk straight into a tripwire that sends them tumbling down the stairs... into a pit of kitchen knives.`
+            const killData = [
+                { text: `${victim.name} answers the phone at exactly 11:47 PM. "Hello?" Click. They hang up and walk to the kitchen for a late-night snack when WHAM! A meat cleaver splits their skull like a watermelon.`, method: 'Cleaver', location: 'Kitchen' },
+                { text: `${victim.name} is taking a steamy shower when the lights flicker. "Hello? Is someone there?" The shower curtain gets yanked back and a masked figure plunges a kitchen knife into their chest seven times.`, method: 'Knife', location: 'Bathroom' },
+                { text: `${victim.name} hears scratching at the window. "Probably just a tree branch," they mutter, opening the blinds. CRASH! The killer bursts through the glass, tackling them to the ground and strangling them with piano wire.`, method: 'Strangulation', location: 'Bedroom' },
+                { text: `${victim.name} is alone in the garage working on their car when the garage door suddenly slams shut. The killer emerges from behind a tool cabinet and impales them on a garden rake.`, method: 'Impalement', location: 'Garage' },
+                { text: `${victim.name} is studying late at night when they hear the doorbell ring. "Pizza's here!" they call out, opening the door without checking. Instead of pizza, they get a chainsaw to the face.`, method: 'Chainsaw', location: 'Front Door' },
+                { text: `${victim.name} is doing laundry in the basement when the washing machine starts making weird noises. They lean in to check and the killer grabs them from behind, shoving their head into the spin cycle.`, method: 'Drowning', location: 'Basement' },
+                { text: `${victim.name} decides to take out the trash during a thunderstorm. Lightning flashes as they reach the dumpster, revealing the killer standing behind it. A machete swing later, and ${victim.name} becomes part of the garbage.`, method: 'Machete', location: 'Outside' },
+                { text: `${victim.name} is home alone watching TV when the power goes out. They grab a flashlight and head to the breaker box, only to find the killer waiting with a pair of bolt cutters. SNAP! goes more than just the power.`, method: 'Blunt Force', location: 'Basement' },
+                { text: `${victim.name} is making a midnight snack when they hear their dog barking outside. "What's wrong, boy?" They open the back door to find their dog... and the killer holding a bloody shovel.`, method: 'Blunt Force', location: 'Back Door' },
+                { text: `${victim.name} is video chatting with friends when the wifi cuts out. "Ugh, typical!" They head upstairs to reset the router and walk straight into a tripwire that sends them tumbling down the stairs... into a pit of kitchen knives.`, method: 'Knife', location: 'Stairway' }
             ];
             
-            const kill = openingKills[Math.floor(Math.random() * openingKills.length)];
-            addEvent('death', `💀 OPENING KILL: ${kill}`);
+            const selectedKill = killData[Math.floor(Math.random() * killData.length)];
+            victim.killMethod = selectedKill.method;
+            victim.deathLocation = selectedKill.location;
+            
+            // Content warning check
+            let killText = selectedKill.text;
+            if (!gameState.contentWarnings) {
+                killText = killText.replace(/splits their skull like a watermelon|plunges a kitchen knife into their chest seven times|chainsaw to the face|shoving their head into the spin cycle/g, '[GRAPHIC CONTENT CENSORED]');
+            }
+            
+            addEvent('death', `💀 OPENING KILL: ${killText}`);
             
             const lastWords = [
                 `"Wait... ${killer.name}? But why would you—" *THUD*`,
@@ -1410,6 +1461,14 @@
             victim.actStatuses[act] = 'Killed';
             victim.killedBy = killer.name;
             victim.deathAct = act;
+            
+            // Track kill methods
+            if (victim.killMethod) {
+                if (!gameState.killMethods[victim.killMethod]) {
+                    gameState.killMethods[victim.killMethod] = 0;
+                }
+                gameState.killMethods[victim.killMethod]++;
+            }
             
             // Update edgic for dramatic death
             victim.edgic[act] = 'CP5';
@@ -2017,6 +2076,9 @@
             gameState.currentAct = 2;
             updateProgress();
             
+            // Auto-save at end of each act
+            autoSave();
+            
             // Queue up Act 2 start
             gameState.storyQueue.push({
                 type: 'function',
@@ -2195,6 +2257,9 @@
             
             // Generate edgic for Act 2
             generateEdgicRatings(2);
+            
+            // Auto-save at end of each act
+            autoSave();
             
             // Queue up Act 3 start
             gameState.storyQueue.push({
@@ -2448,6 +2513,9 @@
             
             // Generate final edgic ratings
             generateEdgicRatings(3);
+            
+            // Auto-save when movie completes
+            autoSave();
         }
 
         function generateEdgicRatings(act) {
@@ -2481,8 +2549,8 @@
                 if (gameState.killers.includes(character)) {
                     // Killers need different edits depending on the act
                     if (act === 3) {
-                        // Act 3: Killer reveal - MUST be dramatic NEGATIVE or MIXED visibility - NO POSITIVE EVER
-                        const killerRevealRatings = ['OTTN5', 'OTTN5', 'CPN5', 'OTTM5', 'OTTM4', 'CPM5', 'MORN5', 'OTTN4', 'CPN4', 'CPM4', 'MORN4', 'OTTM3', 'CPN3'];
+                        // Act 3: Killer reveal - MUST be dramatic NEGATIVE or MIXED visibility - ABSOLUTELY NO POSITIVE EVER
+                        const killerRevealRatings = ['OTTN5', 'OTTN5', 'CPN5', 'CPN4', 'OTTM5', 'OTTM4', 'CPM5', 'CPM4', 'MORN5', 'MORN4', 'OTTN4', 'OTTM3', 'CPN3', 'CPM3'];
                         character.edgic[act] = killerRevealRatings[Math.floor(Math.random() * killerRevealRatings.length)];
                     } else {
                         // Act 1-2: Hidden killer - mix of ratings, occasionally negative/mixed for hints, some OTT for dramatic moments
@@ -2616,13 +2684,15 @@
                 // Check if we should offer killer actions
                 if (gameState.isKillerMode && gameState.killerPlayer && !gameState.movieComplete) {
                     const aliveVictims = gameState.characters.filter(c => 
-                        c.status === 'Alive' && c.id !== gameState.killerPlayer.id
+                        c.status === 'Alive' && c.id !== gameState.killerPlayer.id && !gameState.killers.includes(c)
                     );
                     
                     if (aliveVictims.length > 0 && Math.random() < 0.4) { // 40% chance to offer killer actions
                         showKillerActions();
-                        document.getElementById('force-killer-action').style.display = 'inline-block';
-                        document.getElementById('killer-help-text').style.display = 'block';
+                        const forceBtn = document.getElementById('force-killer-action');
+                        const helpText = document.getElementById('killer-help-text');
+                        if (forceBtn) forceBtn.style.display = 'inline-block';
+                        if (helpText) helpText.style.display = 'block';
                         updateStoryStatus();
                     }
                 }
@@ -2637,13 +2707,15 @@
                 // Check if we should offer killer actions when queue is empty
                 if (gameState.isKillerMode && gameState.killerPlayer && !gameState.movieComplete) {
                     const aliveVictims = gameState.characters.filter(c => 
-                        c.status === 'Alive' && c.id !== gameState.killerPlayer.id
+                        c.status === 'Alive' && c.id !== gameState.killerPlayer.id && !gameState.killers.includes(c)
                     );
                     
                     if (aliveVictims.length > 0) {
                         showKillerActions();
-                        document.getElementById('force-killer-action').style.display = 'inline-block';
-                        document.getElementById('killer-help-text').style.display = 'block';
+                        const forceBtn = document.getElementById('force-killer-action');
+                        const helpText = document.getElementById('killer-help-text');
+                        if (forceBtn) forceBtn.style.display = 'inline-block';
+                        if (helpText) helpText.style.display = 'block';
                         updateStoryStatus();
                     }
                 }
@@ -2664,7 +2736,7 @@
             // Check for killer action opportunities during story progression
             if (gameState.isKillerMode && gameState.killerPlayer && !gameState.movieComplete) {
                 const aliveVictims = gameState.characters.filter(c => 
-                    c.status === 'Alive' && c.id !== gameState.killerPlayer.id
+                    c.status === 'Alive' && c.id !== gameState.killerPlayer.id && !gameState.killers.includes(c)
                 );
                 
                 if (aliveVictims.length > 0) {
@@ -2672,8 +2744,10 @@
                     if (Math.random() < 0.3) { // 30% chance during story progression
                         setTimeout(() => {
                             showKillerActions();
-                            document.getElementById('force-killer-action').style.display = 'inline-block';
-                            document.getElementById('killer-help-text').style.display = 'block';
+                            const forceBtn = document.getElementById('force-killer-action');
+                            const helpText = document.getElementById('killer-help-text');
+                            if (forceBtn) forceBtn.style.display = 'inline-block';
+                            if (helpText) helpText.style.display = 'block';
                             updateStoryStatus();
                         }, 1000);
                         return; // Don't auto-continue, wait for killer action
@@ -2682,7 +2756,8 @@
             }
             
             if (gameState.autoPlay && gameState.currentStoryIndex < gameState.storyQueue.length) {
-                setTimeout(() => playNextStoryEvent(), event.delay || 2000);
+                const adjustedDelay = (event.delay || 2000) / gameState.storySpeed;
+                setTimeout(() => playNextStoryEvent(), adjustedDelay);
             }
         }
 
@@ -2955,6 +3030,7 @@
             displayKillerReveal();
             displayFinalBodyCount();
             displayEdgicAnalysis();
+            displayMovieStatistics();
             displayFranchiseHistory();
         }
 
@@ -3035,7 +3111,89 @@
             edgicTable.appendChild(legendDiv);
         }
 
-        function getEdgicClass(rating) {
+        function displayMovieStatistics() {
+            const statsContainer = document.getElementById('movie-stats');
+            
+            // Calculate statistics
+            const totalDeaths = gameState.characters.filter(c => c.status === 'Dead' && !gameState.killers.includes(c)).length;
+            const survivors = gameState.characters.filter(c => c.status === 'Alive' && !gameState.killers.includes(c)).length;
+            const killerCount = gameState.killers.length;
+            
+            // Kill methods stats
+            const killMethodsHtml = Object.keys(gameState.killMethods).length > 0 ? 
+                Object.entries(gameState.killMethods)
+                    .sort(([,a], [,b]) => b - a)
+                    .map(([method, count]) => `<div>${method}: ${count}</div>`)
+                    .join('') : '<div>No kills recorded</div>';
+            
+            // Death locations stats
+            const deathLocations = {};
+            gameState.characters.filter(c => c.deathLocation).forEach(c => {
+                deathLocations[c.deathLocation] = (deathLocations[c.deathLocation] || 0) + 1;
+            });
+            
+            const locationsHtml = Object.keys(deathLocations).length > 0 ? 
+                Object.entries(deathLocations)
+                    .sort(([,a], [,b]) => b - a)
+                    .map(([location, count]) => `<div>${location}: ${count}</div>`)
+                    .join('') : '<div>No locations recorded</div>';
+            
+            // Archetype survival stats
+            const archetypeStats = {};
+            gameState.characters.forEach(c => {
+                if (!gameState.killers.includes(c)) {
+                    const archetype = c.archetype.name;
+                    if (!archetypeStats[archetype]) {
+                        archetypeStats[archetype] = { total: 0, survived: 0 };
+                    }
+                    archetypeStats[archetype].total++;
+                    if (c.status === 'Alive') {
+                        archetypeStats[archetype].survived++;
+                    }
+                }
+            });
+            
+            const archetypeHtml = Object.keys(archetypeStats).length > 0 ? 
+                Object.entries(archetypeStats)
+                    .map(([archetype, stats]) => {
+                        const rate = ((stats.survived / stats.total) * 100).toFixed(0);
+                        return `<div>${archetype}: ${rate}% (${stats.survived}/${stats.total})</div>`;
+                    })
+                    .join('') : '<div>No data available</div>';
+            
+            statsContainer.innerHTML = `
+                <div style="background: #333; padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #ff4444; margin-bottom: 15px;">📈 Body Count</h4>
+                    <div style="font-size: 1.1rem;">
+                        <div><strong>Total Deaths:</strong> ${totalDeaths}</div>
+                        <div><strong>Survivors:</strong> ${survivors}</div>
+                        <div><strong>Killers:</strong> ${killerCount}</div>
+                        <div><strong>Survival Rate:</strong> ${totalDeaths + survivors > 0 ? ((survivors / (totalDeaths + survivors)) * 100).toFixed(1) : 0}%</div>
+                    </div>
+                </div>
+                
+                <div style="background: #333; padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #ff4444; margin-bottom: 15px;">🔪 Kill Methods</h4>
+                    <div style="font-size: 0.9rem;">
+                        ${killMethodsHtml}
+                    </div>
+                </div>
+                
+                <div style="background: #333; padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #ff4444; margin-bottom: 15px;">📍 Death Locations</h4>
+                    <div style="font-size: 0.9rem;">
+                        ${locationsHtml}
+                    </div>
+                </div>
+                
+                <div style="background: #333; padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #ff4444; margin-bottom: 15px;">🎭 Archetype Survival Rates</h4>
+                    <div style="font-size: 0.9rem;">
+                        ${archetypeHtml}
+                    </div>
+                </div>
+            `;
+        }
             if (rating === 'N/A') return 'edgic-na';
             if (rating === 'DEAD') return 'edgic-dead';
             if (rating === 'INV') return 'edgic-inv';
@@ -3299,6 +3457,23 @@
                 do {
                     name = names[Math.floor(Math.random() * names.length)];
                 } while (usedNames.has(name));
+                usedNames.add(name);female, ...names.neutral];
+                } else {
+                    namePool = [...names.male, ...names.female, ...names.neutral];
+                }
+                
+                // Safety check to prevent infinite loop
+                let attempts = 0;
+                do {
+                    name = namePool[Math.floor(Math.random() * namePool.length)];
+                    attempts++;
+                } while (usedNames.has(name) && attempts < 100);
+                
+                // If we couldn't find a unique name after 100 attempts, just use a fallback
+                if (attempts >= 100) {
+                    name = `Character${i + 1}`;
+                }
+                
                 usedNames.add(name);
                 
                 // Get unique archetype
